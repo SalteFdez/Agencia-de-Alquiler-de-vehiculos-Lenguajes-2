@@ -20,6 +20,6 @@ public class Camioneta extends Vehiculo {
 
     @Override
     protected double getFactorTarifa() {
-        return 1.4;
+        return traccion4x4 ? 1.6 : 1.4;
     }
 }
