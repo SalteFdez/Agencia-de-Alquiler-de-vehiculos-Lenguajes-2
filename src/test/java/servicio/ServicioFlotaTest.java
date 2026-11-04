@@ -51,4 +51,20 @@ class ServicioFlotaTest {
         assertTrue(e.getMessage().contains("ya está registrada"));
         assertEquals(List.of(original), servicio.listarVehiculos());
     }
+
+    @Test
+    void registrarUnaPatenteRepetidaEnDistintoCasoLanzaExcepcionYLaListaNoCambia() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto original = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Auto repetido = new Auto("ab123cd", "Renault", "Logan", "Gris", 2020, 40000,
+                9000.0, 4, 5, TipoCaja.MANUAL);
+        servicio.registrarVehiculo(original);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(repetido));
+
+        assertTrue(e.getMessage().contains("ya está registrada"));
+        assertEquals(List.of(original), servicio.listarVehiculos());
+    }
 }

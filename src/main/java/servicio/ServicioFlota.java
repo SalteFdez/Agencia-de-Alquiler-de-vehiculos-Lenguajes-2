@@ -16,7 +16,7 @@ public class ServicioFlota {
 
     public void registrarVehiculo(Vehiculo v) throws AlquilerException {
         for (Vehiculo existente : agencia.getVehiculos()) {
-            if (existente.getPatente().equals(v.getPatente())) {
+            if (existente.getPatente().equalsIgnoreCase(v.getPatente())) {
                 throw new AlquilerException("La patente " + v.getPatente() + " ya está registrada");
             }
         }
