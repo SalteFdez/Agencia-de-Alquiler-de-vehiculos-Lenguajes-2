@@ -159,4 +159,19 @@ class ModeloTablaFlotaTest {
         assertEquals(auto, modelo.getVehiculoEn(0));
         assertEquals(moto, modelo.getVehiculoEn(1));
     }
+
+    @Test
+    void getVehiculoEnRespetaElFiltroElegido() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        servicio.registrarVehiculo(new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022,
+                15000, 10000.0, 4, 5, TipoCaja.MANUAL));
+        Moto moto = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023,
+                5000, 10000.0, 125, true);
+        servicio.registrarVehiculo(moto);
+        ModeloTablaFlota modelo = new ModeloTablaFlota(servicio);
+
+        modelo.setFiltro("Moto", null);
+
+        assertEquals(moto, modelo.getVehiculoEn(0));
+    }
 }
