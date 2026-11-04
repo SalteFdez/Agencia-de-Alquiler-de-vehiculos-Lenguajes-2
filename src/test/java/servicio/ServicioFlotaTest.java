@@ -357,4 +357,19 @@ class ServicioFlotaTest {
         assertTrue(servicio.filtrar(null, EstadoVehiculo.ALQUILADO).isEmpty());
         assertTrue(servicio.filtrar("Auto", EstadoVehiculo.ALQUILADO).isEmpty());
     }
+
+    @Test
+    void eliminarUnVehiculoLoQuitaDeLaFlotaYLosDemasQuedan() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Moto moto = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, 125, true);
+        servicio.registrarVehiculo(auto);
+        servicio.registrarVehiculo(moto);
+
+        servicio.eliminarVehiculo(auto);
+
+        assertEquals(List.of(moto), servicio.listarVehiculos());
+    }
 }

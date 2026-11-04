@@ -38,6 +38,10 @@ public class ServicioFlota {
         return new ArrayList<>(agencia.getVehiculos());
     }
 
+    public void eliminarVehiculo(Vehiculo v) {
+        agencia.getVehiculos().remove(v);
+    }
+
     public List<Vehiculo> filtrar(String tipo, EstadoVehiculo estado) {
         List<Vehiculo> resultado = new ArrayList<>();
         for (Vehiculo v : agencia.getVehiculos()) {

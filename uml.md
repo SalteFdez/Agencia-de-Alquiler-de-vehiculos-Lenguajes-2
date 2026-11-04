@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #3 terminada (registrar una camioneta).
+Última actualización: historia #4 terminada (filtrar la flota por tipo y estado).
 
 ## Diagrama
 
@@ -26,6 +26,8 @@ classDiagram
         class VentanaPrincipal {
             -comboTipo: JComboBox~String~
             -comboEstado: JComboBox~String~
+            -tablaFlota: JTable
+            -darDeBaja: JButton
             +VentanaPrincipal(servicio: ServicioFlota)
         }
         class FormularioAuto {
@@ -73,6 +75,7 @@ classDiagram
             -filtroTipo: String
             -filtroEstado: EstadoVehiculo
             +setFiltro(tipo: String, estado: EstadoVehiculo) void
+            +getVehiculoEn(fila: int) Vehiculo
             +getRowCount() int
             +getColumnCount() int
             +getColumnName(columna: int) String
@@ -323,15 +326,15 @@ classDiagram
 
 | Clase | Paquete | Estado | Pendiente | Historia |
 | --- | --- | --- | --- | --- |
-| `Vehiculo` | `modelo.flota` | Parcial | `getLicenciaRequerida()`, `estaDisponible()`, `cambiarEstado()`, `actualizarKilometraje()` | #9, #10, #11 |
+| `Vehiculo` | `modelo.flota` | Parcial | `getLicenciaRequerida()`, `estaDisponible()`, `actualizarKilometraje()` | #9, #10, #11 |
 | `Auto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `EstadoVehiculo`, `TipoCaja` | `modelo.flota` | Hecho | — | #1 |
 | `Moto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `Camioneta` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `Agencia` | `modelo` | Parcial | `clientes`, `contratos`, contadores y sus métodos | #6, #9 |
-| `ServicioFlota` | `servicio` | Parcial | `eliminarVehiculo()`, `filtrar()` | #4, #5 |
+| `ServicioFlota` | `servicio` | Parcial | `eliminarVehiculo()` | #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `PanelDatosVehiculo`, `ModeloTablaFlota` | `vista` | Hecho para #3 | Crecen con cada historia | #1, #2, #3 |
+| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `PanelDatosVehiculo`, `ModeloTablaFlota` | `vista` | Hecho para #4 | Crecen con cada historia | #1, #2, #3, #4 |
 | `Cliente`, `LicenciaConducir`, `CategoriaLicencia`, `ServicioClientes` | `modelo.clientes`, `servicio` | Pendiente | Todo | #6, #7, #8 |
 | `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #12, #15 |
 | `Tarifa`, `TarifaDiaria`, `TarifaSemanal`, `TarifaKilometraje` | `modelo.tarifas` | Pendiente | Todo | #9, #13, #14 |
@@ -344,5 +347,9 @@ classDiagram
 - `validarDatosPropios()` valida los datos propios de cada subclase y la llama `ServicioFlota.registrarVehiculo()`. En `Vehiculo` no valida nada; `Auto` exige puertas y pasajeros mayores a 0; `Moto` exige cilindrada mayor a 0; `Camioneta` exige capacidad de carga mayor a 0.
 - `PanelDatosVehiculo` tiene los 7 campos comunes del formulario. Cada formulario de vehículo lo contiene y le agrega sus campos propios con `agregar()`.
 - `ServicioFlota.registrarVehiculo()` rechaza con `AlquilerException`: patente vacía o en blanco, kilometraje o precio negativos y patente repetida (sin distinguir mayúsculas).
+- `ServicioFlota.filtrar(tipo, estado)` devuelve los vehículos que cumplen todos los filtros pedidos, en el orden en que se registraron. `tipo` es el texto de `getTipo()` ("Auto", "Moto", "Camioneta") y `null` en `tipo` o en `estado` significa sin filtro.
+- `ModeloTablaFlota` guarda el filtro (`filtroTipo`, `filtroEstado`) y lo cambia con `setFiltro()`, que refresca la tabla. Siempre consulta a `ServicioFlota.filtrar()`, por eso un vehículo nuevo aparece solo si cumple el filtro elegido.
+- `VentanaPrincipal` tiene dos listas desplegables, `comboTipo` y `comboEstado`, con "Todos" como primera opción; "Todos" se traduce a `null` antes de llamar a `setFiltro()`.
+- `Vehiculo.cambiarEstado()` asigna el estado sin validar nada. Las reglas de cuándo se puede alquilar o devolver llegan con #9 y #11.
 - `getFactorTarifa()` es protegido: solo lo usa `getPrecioDiario()`. `Camioneta` devuelve 1,4, o 1,6 si tiene tracción 4x4.
 - El punto de entrada (`Main`) está en el paquete `vista`.

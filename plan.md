@@ -1,31 +1,31 @@
-# Plan — Historia #4 (borrar al terminar la historia)
+# Plan — Historia #5 (borrar al terminar la historia)
 
 ## Story
-Como operador, quiero filtrar la flota por tipo y estado, para encontrar rápido qué vehículo puedo alquilar.
+Como encargado de flota, quiero dar de baja un vehículo, para que no se ofrezca más.
 
 ## Acceptance criteria
-- [ ] Dado que la flota tiene autos, motos y camionetas, cuando elijo un tipo en el filtro de tipo, entonces la lista muestra solo los vehículos de ese tipo; si elijo "Todos", vuelve a mostrar la flota completa.
-- [ ] Dado que la flota tiene vehículos, cuando elijo un estado en el filtro de estado (solo o junto con un tipo), entonces la lista muestra solo los vehículos que cumplen todos los filtros elegidos; si ninguno los cumple, la lista queda vacía.
-- [ ] Dado que hay un filtro elegido, cuando registro un vehículo nuevo, entonces la lista sigue filtrada y el vehículo nuevo aparece solo si cumple el filtro.
+- [ ] Dado que elijo un vehículo en la lista de la flota, cuando presiono "Dar de baja" y confirmo, entonces el vehículo desaparece de la lista y ya no forma parte de la flota.
+- [ ] Dado que elijo un vehículo y presiono "Dar de baja", cuando cancelo la confirmación, entonces el vehículo sigue en la lista sin cambios.
+- [ ] Dado que el vehículo elegido está ALQUILADO, cuando intento darlo de baja, entonces veo un mensaje que indica que no se puede dar de baja un vehículo alquilado y el vehículo sigue en la lista.
 
 ## Plan
-- Servicio: una operación que devuelve los vehículos que cumplen el tipo y el estado pedidos; un filtro sin valor significa "todos".
-- Interfaz: dos listas desplegables arriba de la tabla de la pestaña Flota, una de tipo (Todos, Auto, Moto, Camioneta) y otra de estado (Todos, DISPONIBLE, ALQUILADO).
-- La tabla muestra el resultado del filtro elegido y se actualiza al cambiar cualquiera de las dos listas.
-- Después de registrar un vehículo, la tabla se actualiza conservando el filtro elegido.
+- Servicio: una operación que quita un vehículo de la flota y lo rechaza si está alquilado.
+- Interfaz: un botón "Dar de baja" en la pestaña Flota, habilitado solo cuando hay un vehículo elegido en la tabla.
+- Al presionarlo, se pide confirmación mostrando la patente; si se confirma, se llama al servicio y se actualiza la tabla conservando el filtro elegido; si hay un error, se muestra en un mensaje.
 - Al terminar: comparar los nombres del código con `uml.md` y actualizarlo (diagrama, tabla de estado y notas).
 
 ## Nombres obligatorios (según `uml.md`)
-- Servicio: `ServicioFlota.filtrar(tipo: String, estado: EstadoVehiculo): List<Vehiculo>`. `tipo` es el valor que devuelve `getTipo()` ("Auto", "Moto", "Camioneta"); `null` en `tipo` o en `estado` significa sin filtro.
-- Tabla: `ModeloTablaFlota` guarda el filtro en `filtroTipo: String` y `filtroEstado: EstadoVehiculo`, y lo cambia con `setFiltro(tipo: String, estado: EstadoVehiculo): void`, que refresca la tabla.
-- Vista: las listas desplegables de `VentanaPrincipal` se llaman `comboTipo` y `comboEstado`. La opción "Todos" se traduce a `null` antes de llamar a `setFiltro()`.
-- Estos nombres son nuevos: agregarlos a `uml.md` al empezar la historia. Si hace falta otro nombre que no está en esta lista ni en `uml.md`, agregarlo primero a `uml.md`.
+- Servicio: `ServicioFlota.eliminarVehiculo(v: Vehiculo): void`, que lanza `AlquilerException` si `v.getEstado()` es `ALQUILADO`.
+- Mensaje de error: "No se puede dar de baja un vehículo alquilado".
+- Tabla: `ModeloTablaFlota.getVehiculoEn(fila: int): Vehiculo` devuelve el vehículo de esa fila según el filtro elegido.
+- Vista: en `VentanaPrincipal`, la tabla se llama `tablaFlota` y el botón `darDeBaja`.
+- `getVehiculoEn()`, `tablaFlota` y `darDeBaja` son nombres nuevos: agregarlos a `uml.md` al empezar la historia. Si hace falta otro nombre que no está en esta lista ni en `uml.md`, agregarlo primero a `uml.md`.
 
 ## Out of scope
-- Buscar por patente, marca o modelo (no está en el backlog).
-- Ordenar la tabla por columnas.
-- Dar de baja vehículos (#5).
-- Hoy todos los vehículos quedan DISPONIBLE: el filtro ALQUILADO devuelve una lista vacía hasta que exista el contrato (#9).
+- Dar de baja varios vehículos a la vez.
+- Deshacer una baja o ver los vehículos dados de baja.
+- Conservar el historial de contratos del vehículo (todavía no hay contratos; llega con #9).
+- Hoy ningún vehículo queda ALQUILADO: el tercer criterio solo se prueba con tests del servicio hasta que exista el contrato (#9).
 
 ## Suggestions (your call)
 - Ninguna.
