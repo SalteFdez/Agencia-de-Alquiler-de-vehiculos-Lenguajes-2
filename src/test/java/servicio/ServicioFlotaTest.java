@@ -184,4 +184,20 @@ class ServicioFlotaTest {
         assertEquals(List.of(moto), servicio.listarVehiculos());
         assertEquals(EstadoVehiculo.DISPONIBLE, servicio.listarVehiculos().get(0).getEstado());
     }
+
+    @Test
+    void registrarUnaMotoConLaPatenteDeUnAutoLanzaExcepcionYLaListaNoCambia() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Moto moto = new Moto("AB123CD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, 125, true);
+        servicio.registrarVehiculo(auto);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(moto));
+
+        assertTrue(e.getMessage().contains("ya está registrada"));
+        assertEquals(List.of(auto), servicio.listarVehiculos());
+    }
 }
