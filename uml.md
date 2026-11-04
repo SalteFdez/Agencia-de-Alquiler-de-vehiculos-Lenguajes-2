@@ -24,6 +24,8 @@ classDiagram
             +main(args: String[])$ void
         }
         class VentanaPrincipal {
+            -comboTipo: JComboBox~String~
+            -comboEstado: JComboBox~String~
             +VentanaPrincipal(servicio: ServicioFlota)
         }
         class FormularioAuto {
@@ -68,6 +70,9 @@ classDiagram
         class ModeloTablaFlota {
             -COLUMNAS: String[]$
             -servicio: ServicioFlota
+            -filtroTipo: String
+            -filtroEstado: EstadoVehiculo
+            +setFiltro(tipo: String, estado: EstadoVehiculo) void
             +getRowCount() int
             +getColumnCount() int
             +getColumnName(columna: int) String

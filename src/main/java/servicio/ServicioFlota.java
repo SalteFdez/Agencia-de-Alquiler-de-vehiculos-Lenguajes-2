@@ -4,6 +4,7 @@ import excepciones.AlquilerException;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Agencia;
+import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
 
 public class ServicioFlota {
@@ -35,5 +36,9 @@ public class ServicioFlota {
 
     public List<Vehiculo> listarVehiculos() {
         return new ArrayList<>(agencia.getVehiculos());
+    }
+
+    public List<Vehiculo> filtrar(String tipo, EstadoVehiculo estado) {
+        return listarVehiculos();
     }
 }

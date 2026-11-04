@@ -280,4 +280,20 @@ class ServicioFlotaTest {
         assertTrue(e.getMessage().contains("capacidad de carga debe ser mayor a 0"));
         assertTrue(servicio.listarVehiculos().isEmpty());
     }
+
+    @Test
+    void filtrarSinTipoNiEstadoDevuelveTodaLaFlota() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Moto moto = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, 125, true);
+        Camioneta camioneta = new Camioneta("AC123DE", "Toyota", "Hilux", "Gris", 2022, 20000,
+                10000.0, 1000.0, false);
+        servicio.registrarVehiculo(auto);
+        servicio.registrarVehiculo(moto);
+        servicio.registrarVehiculo(camioneta);
+
+        assertEquals(List.of(auto, moto, camioneta), servicio.filtrar(null, null));
+    }
 }

@@ -1,33 +1,31 @@
-# Plan — Historia #3 (borrar al terminar la historia)
+# Plan — Historia #4 (borrar al terminar la historia)
 
 ## Story
-Como encargado de flota, quiero registrar una camioneta, para ofrecer camionetas en alquiler.
+Como operador, quiero filtrar la flota por tipo y estado, para encontrar rápido qué vehículo puedo alquilar.
 
 ## Acceptance criteria
-- [ ] Dado que estoy en la pestaña Flota, cuando cargo patente, marca, modelo, color, año, kilometraje, precio base diario, capacidad de carga en kg y si tiene tracción 4x4 y guardo, entonces la camioneta aparece en la lista con tipo "Camioneta", estado DISPONIBLE y precio diario igual al precio base × 1,4 (o × 1,6 si tiene tracción 4x4).
-- [ ] Dado que ya existe un vehículo (auto, moto o camioneta) con una patente, o que dejo la patente vacía o cargo un kilometraje o precio negativo, cuando guardo la camioneta, entonces veo un mensaje que indica el problema y la camioneta no se registra.
-- [ ] Dado que cargo una capacidad de carga igual a 0 o negativa, cuando guardo, entonces veo un mensaje que indica que la capacidad de carga debe ser mayor a 0 y la camioneta no se registra.
+- [ ] Dado que la flota tiene autos, motos y camionetas, cuando elijo un tipo en el filtro de tipo, entonces la lista muestra solo los vehículos de ese tipo; si elijo "Todos", vuelve a mostrar la flota completa.
+- [ ] Dado que la flota tiene vehículos, cuando elijo un estado en el filtro de estado (solo o junto con un tipo), entonces la lista muestra solo los vehículos que cumplen todos los filtros elegidos; si ninguno los cumple, la lista queda vacía.
+- [ ] Dado que hay un filtro elegido, cuando registro un vehículo nuevo, entonces la lista sigue filtrada y el vehículo nuevo aparece solo si cumple el filtro.
 
 ## Plan
-- Modelo: la camioneta como subclase de vehículo, con capacidad de carga y tracción 4x4, su factor de tarifa (1,4, o 1,6 con 4x4) y la validación de su capacidad de carga.
-- Servicio: sin cambios, porque ya registra cualquier vehículo con las validaciones comunes y la de patente repetida.
-- Interfaz: un botón "Agregar camioneta" en la pestaña Flota que abre un formulario con el panel de datos comunes, la capacidad de carga y una casilla para la tracción 4x4.
-- Al guardar, el formulario llama al servicio y actualiza la tabla; si hay un error, lo muestra en un mensaje.
+- Servicio: una operación que devuelve los vehículos que cumplen el tipo y el estado pedidos; un filtro sin valor significa "todos".
+- Interfaz: dos listas desplegables arriba de la tabla de la pestaña Flota, una de tipo (Todos, Auto, Moto, Camioneta) y otra de estado (Todos, DISPONIBLE, ALQUILADO).
+- La tabla muestra el resultado del filtro elegido y se actualiza al cambiar cualquiera de las dos listas.
+- Después de registrar un vehículo, la tabla se actualiza conservando el filtro elegido.
 - Al terminar: comparar los nombres del código con `uml.md` y actualizarlo (diagrama, tabla de estado y notas).
 
 ## Nombres obligatorios (según `uml.md`)
-- Clase del modelo: `Camioneta` en `modelo.flota`, subclase de `Vehiculo`.
-- Atributos: `capacidadCargaKg: double` y `traccion4x4: boolean`.
-- Métodos: `getTipo()` devuelve `"Camioneta"`; `getFactorTarifa()` (protegido); `validarDatosPropios()`.
-- Constructor: los 7 datos comunes en el mismo orden que `Auto` y `Moto`, y después `capacidadCargaKg` y `traccion4x4`.
-- Vista: `FormularioCamioneta` en `vista`, que contiene un `PanelDatosVehiculo`; sus campos se llaman `capacidadCargaKg` y `traccion4x4`.
-- Mensaje de error: "La capacidad de carga debe ser mayor a 0".
-- Si hace falta un nombre que no está en esta lista ni en `uml.md`, agregarlo primero a `uml.md`.
+- Servicio: `ServicioFlota.filtrar(tipo: String, estado: EstadoVehiculo): List<Vehiculo>`. `tipo` es el valor que devuelve `getTipo()` ("Auto", "Moto", "Camioneta"); `null` en `tipo` o en `estado` significa sin filtro.
+- Tabla: `ModeloTablaFlota` guarda el filtro en `filtroTipo: String` y `filtroEstado: EstadoVehiculo`, y lo cambia con `setFiltro(tipo: String, estado: EstadoVehiculo): void`, que refresca la tabla.
+- Vista: las listas desplegables de `VentanaPrincipal` se llaman `comboTipo` y `comboEstado`. La opción "Todos" se traduce a `null` antes de llamar a `setFiltro()`.
+- Estos nombres son nuevos: agregarlos a `uml.md` al empezar la historia. Si hace falta otro nombre que no está en esta lista ni en `uml.md`, agregarlo primero a `uml.md`.
 
 ## Out of scope
-- Filtrar la flota (#4) y dar de baja vehículos (#5).
-- La licencia requerida para la camioneta (categoría B), que llega con la validación del conductor (#10).
-- Editar vehículos y guardar en archivo.
+- Buscar por patente, marca o modelo (no está en el backlog).
+- Ordenar la tabla por columnas.
+- Dar de baja vehículos (#5).
+- Hoy todos los vehículos quedan DISPONIBLE: el filtro ALQUILADO devuelve una lista vacía hasta que exista el contrato (#9).
 
 ## Suggestions (your call)
-- Ninguna: el panel compartido ya evita repetir los campos comunes.
+- Ninguna.
