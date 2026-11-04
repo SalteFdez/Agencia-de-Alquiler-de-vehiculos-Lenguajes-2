@@ -119,4 +119,26 @@ class ServicioFlotaTest {
         assertTrue(e.getMessage().contains("precio"));
         assertTrue(servicio.listarVehiculos().isEmpty());
     }
+
+    @Test
+    void unKilometrajeCeroEsValido() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto kmCero = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 0,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+
+        servicio.registrarVehiculo(kmCero);
+
+        assertEquals(List.of(kmCero), servicio.listarVehiculos());
+    }
+
+    @Test
+    void unPrecioBaseCeroEsValido() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto precioCero = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                0.0, 4, 5, TipoCaja.MANUAL);
+
+        servicio.registrarVehiculo(precioCero);
+
+        assertEquals(List.of(precioCero), servicio.listarVehiculos());
+    }
 }
