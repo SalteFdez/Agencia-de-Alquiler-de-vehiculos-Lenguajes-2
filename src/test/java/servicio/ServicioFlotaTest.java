@@ -8,9 +8,11 @@ import java.util.List;
 import excepciones.AlquilerException;
 import modelo.Agencia;
 import modelo.flota.Auto;
+import modelo.flota.Camioneta;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Moto;
 import modelo.flota.TipoCaja;
+import modelo.flota.Vehiculo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -224,6 +226,58 @@ class ServicioFlotaTest {
                 () -> servicio.registrarVehiculo(cilindradaNegativa));
 
         assertTrue(e.getMessage().contains("cilindrada debe ser mayor a 0"));
+        assertTrue(servicio.listarVehiculos().isEmpty());
+    }
+
+    @Test
+    void registrarUnaCamionetaConDatosValidosLaAgregaALaListaDisponibleYConSuPrecioDiario() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Camioneta camioneta = new Camioneta("AC123DE", "Toyota", "Hilux", "Gris", 2022, 20000,
+                10000.0, 1000.0, true);
+
+        servicio.registrarVehiculo(camioneta);
+
+        Vehiculo registrada = servicio.listarVehiculos().get(0);
+        assertEquals(List.of(camioneta), servicio.listarVehiculos());
+        assertEquals("Camioneta", registrada.getTipo());
+        assertEquals(EstadoVehiculo.DISPONIBLE, registrada.getEstado());
+        assertEquals(16000.0, registrada.getPrecioDiario(), 0.001);
+    }
+
+    @Test
+    void registrarUnaCamionetaConLaPatenteDeUnAutoOUnaMotoLanzaExcepcionYLaListaNoCambia() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Moto moto = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, 125, true);
+        servicio.registrarVehiculo(auto);
+        servicio.registrarVehiculo(moto);
+        Camioneta conPatenteDeAuto = new Camioneta("AB123CD", "Toyota", "Hilux", "Gris", 2022,
+                20000, 10000.0, 1000.0, false);
+        Camioneta conPatenteDeMoto = new Camioneta("A123BCD", "Toyota", "Hilux", "Gris", 2022,
+                20000, 10000.0, 1000.0, false);
+
+        AlquilerException errorAuto = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(conPatenteDeAuto));
+        AlquilerException errorMoto = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(conPatenteDeMoto));
+
+        assertTrue(errorAuto.getMessage().contains("ya está registrada"));
+        assertTrue(errorMoto.getMessage().contains("ya está registrada"));
+        assertEquals(List.of(auto, moto), servicio.listarVehiculos());
+    }
+
+    @Test
+    void unaCapacidadDeCargaIgualACeroLanzaExcepcionYLaCamionetaNoSeRegistra() {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Camioneta sinCapacidad = new Camioneta("AC123DE", "Toyota", "Hilux", "Gris", 2022, 20000,
+                10000.0, 0.0, false);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(sinCapacidad));
+
+        assertTrue(e.getMessage().contains("capacidad de carga debe ser mayor a 0"));
         assertTrue(servicio.listarVehiculos().isEmpty());
     }
 }
