@@ -372,4 +372,19 @@ class ServicioFlotaTest {
 
         assertEquals(List.of(moto), servicio.listarVehiculos());
     }
+
+    @Test
+    void eliminarUnVehiculoAlquiladoLanzaExcepcionYLaFlotaNoCambia() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        servicio.registrarVehiculo(auto);
+        auto.cambiarEstado(EstadoVehiculo.ALQUILADO);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.eliminarVehiculo(auto));
+
+        assertEquals("No se puede dar de baja un vehículo alquilado", e.getMessage());
+        assertEquals(List.of(auto), servicio.listarVehiculos());
+    }
 }

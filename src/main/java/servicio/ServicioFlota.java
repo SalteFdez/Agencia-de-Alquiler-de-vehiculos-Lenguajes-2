@@ -38,7 +38,10 @@ public class ServicioFlota {
         return new ArrayList<>(agencia.getVehiculos());
     }
 
-    public void eliminarVehiculo(Vehiculo v) {
+    public void eliminarVehiculo(Vehiculo v) throws AlquilerException {
+        if (v.getEstado() == EstadoVehiculo.ALQUILADO) {
+            throw new AlquilerException("No se puede dar de baja un vehículo alquilado");
+        }
         agencia.getVehiculos().remove(v);
     }
 
