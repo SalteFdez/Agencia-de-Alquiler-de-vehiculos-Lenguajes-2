@@ -21,7 +21,7 @@ public class ServicioFlota {
         if (v.getKilometraje() < 0) {
             throw new AlquilerException("El kilometraje no puede ser negativo");
         }
-        if (v.getPrecioBase() < 0) {
+        if (v.getPrecioBaseDiario() < 0) {
             throw new AlquilerException("El precio base no puede ser negativo");
         }
         v.validarDatosPropios();

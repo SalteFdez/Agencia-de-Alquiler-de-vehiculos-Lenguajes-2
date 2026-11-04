@@ -1,0 +1,293 @@
+# Diagrama de clases UML — Agencia de alquiler de vehículos
+
+Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y métodos del código deben coincidir con este archivo. Si el diseño cambia durante una historia, actualizar este archivo en el mismo paso.
+
+Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
+
+Última actualización: historia #1 terminada (registrar un auto y verlo en la lista).
+
+## Diagrama
+
+```mermaid
+classDiagram
+    direction TB
+
+    namespace vista {
+        class Main {
+            +main(args: String[])$ void
+        }
+        class VentanaPrincipal {
+            +VentanaPrincipal(servicio: ServicioFlota)
+        }
+        class FormularioAuto {
+            -servicio: ServicioFlota
+            -alRegistrar: Runnable
+            +FormularioAuto(padre: Frame, servicio: ServicioFlota, alRegistrar: Runnable)
+            -guardar() void
+        }
+        class ModeloTablaFlota {
+            -COLUMNAS: String[]$
+            -servicio: ServicioFlota
+            +getRowCount() int
+            +getColumnCount() int
+            +getColumnName(columna: int) String
+            +getValueAt(fila: int, columna: int) Object
+        }
+    }
+
+    namespace servicio {
+        class ServicioFlota {
+            -agencia: Agencia
+            +registrarVehiculo(v: Vehiculo) void
+            +listarVehiculos() List~Vehiculo~
+            +eliminarVehiculo(v: Vehiculo) void
+            +filtrar(tipo: String, estado: EstadoVehiculo) List~Vehiculo~
+        }
+        class ServicioClientes {
+            -agencia: Agencia
+            +registrarCliente(c: Cliente) void
+            +eliminarCliente(c: Cliente) void
+            +buscarPorTexto(texto: String) List~Cliente~
+            +listarClientes() List~Cliente~
+        }
+        class ServicioAlquiler {
+            -agencia: Agencia
+            +crearContrato(c: Cliente, v: Vehiculo, t: Tarifa, fin: LocalDate) Contrato
+            +registrarDevolucion(c: Contrato, fecha: LocalDate, kmFinal: int) void
+            +listarContratos(estado: EstadoContrato) List~Contrato~
+        }
+    }
+
+    namespace persistencia {
+        class GestorPersistencia {
+            -archivo: File
+            +guardar(a: Agencia) void
+            +cargar() Agencia
+            +existeArchivo() boolean
+        }
+    }
+
+    namespace modelo {
+        class Agencia {
+            -vehiculos: List~Vehiculo~
+            -clientes: List~Cliente~
+            -contratos: List~Contrato~
+            -ultimoIdCliente: int
+            -ultimoNroContrato: int
+            +getVehiculos() List~Vehiculo~
+            +siguienteIdCliente() int
+            +siguienteNroContrato() int
+        }
+    }
+
+    namespace flota {
+        class Vehiculo {
+            <<abstract>>
+            -patente: String
+            -marca: String
+            -modelo: String
+            -color: String
+            -anio: int
+            -kilometraje: int
+            -precioBaseDiario: double
+            -estado: EstadoVehiculo
+            +getTipo()* String
+            #getFactorTarifa()* double
+            +getPrecioDiario() double
+            +validarDatosPropios() void
+            +getLicenciaRequerida()* CategoriaLicencia
+            +estaDisponible() boolean
+            +cambiarEstado(e: EstadoVehiculo) void
+            +actualizarKilometraje(km: int) void
+        }
+        class Auto {
+            -cantidadPuertas: int
+            -capacidadPasajeros: int
+            -tipoCaja: TipoCaja
+            +getTipo() String
+            #getFactorTarifa() double
+            +validarDatosPropios() void
+            +getLicenciaRequerida() CategoriaLicencia
+        }
+        class Moto {
+            -cilindrada: int
+            -incluyeCasco: boolean
+            +getTipo() String
+            #getFactorTarifa() double
+            +getLicenciaRequerida() CategoriaLicencia
+        }
+        class Camioneta {
+            -capacidadCargaKg: double
+            -traccion4x4: boolean
+            +getTipo() String
+            #getFactorTarifa() double
+            +getLicenciaRequerida() CategoriaLicencia
+        }
+        class EstadoVehiculo {
+            <<enumeration>>
+            DISPONIBLE
+            ALQUILADO
+        }
+        class TipoCaja {
+            <<enumeration>>
+            MANUAL
+            AUTOMATICA
+        }
+    }
+
+    namespace clientes {
+        class Cliente {
+            -id: int
+            -nombre: String
+            -apellido: String
+            -dni: String
+            -fechaNacimiento: LocalDate
+            -telefono: String
+            -licencia: LicenciaConducir
+            +EDAD_MINIMA: int = 18$
+            +getNombreCompleto() String
+            +getEdad() int
+            +puedeConducir(v: Vehiculo, hasta: LocalDate) boolean
+        }
+        class LicenciaConducir {
+            -numero: String
+            -categorias: Set~CategoriaLicencia~
+            -fechaVencimiento: LocalDate
+            +estaVigente(fecha: LocalDate) boolean
+            +habilitaPara(c: CategoriaLicencia, fecha: LocalDate) boolean
+        }
+        class CategoriaLicencia {
+            <<enumeration>>
+            A
+            B
+            C
+            D
+            E
+        }
+    }
+
+    namespace alquiler {
+        class Contrato {
+            -numero: int
+            -cliente: Cliente
+            -vehiculo: Vehiculo
+            -tarifa: Tarifa
+            -fechaInicio: LocalDate
+            -fechaFinPrevista: LocalDate
+            -fechaDevolucion: LocalDate
+            -kmInicial: int
+            -kmFinal: int
+            -estado: EstadoContrato
+            +RECARGO_ATRASO: double = 1.5$
+            +getDias() long
+            +getDiasAtraso() long
+            +getKmRecorridos() int
+            +calcularCostoAlquiler() double
+            +calcularRecargoAtraso() double
+            +calcularTotal() double
+            +finalizar(fecha: LocalDate, kmFinal: int) void
+            +estaVencido(hoy: LocalDate) boolean
+        }
+        class EstadoContrato {
+            <<enumeration>>
+            ACTIVO
+            FINALIZADO
+        }
+    }
+
+    namespace tarifas {
+        class Tarifa {
+            <<interface>>
+            +calcular(v: Vehiculo, dias: long, km: int) double
+            +getNombre() String
+        }
+        class TarifaDiaria {
+            +calcular(v: Vehiculo, dias: long, km: int) double
+            +getNombre() String
+        }
+        class TarifaSemanal {
+            -porcentajeDescuento: double
+            +calcular(v: Vehiculo, dias: long, km: int) double
+            +getNombre() String
+        }
+        class TarifaKilometraje {
+            -kmLibresPorDia: int
+            -precioKmExcedente: double
+            -porcentajeDescuento: double
+            +calcular(v: Vehiculo, dias: long, km: int) double
+            +getNombre() String
+        }
+    }
+
+    namespace excepciones {
+        class AlquilerException {
+            +AlquilerException(mensaje: String)
+        }
+        class VehiculoNoDisponibleException
+        class ConductorNoHabilitadoException
+    }
+
+    Vehiculo <|-- Auto
+    Vehiculo <|-- Moto
+    Vehiculo <|-- Camioneta
+    Vehiculo --> "1" EstadoVehiculo
+    Auto --> "1" TipoCaja
+
+    Cliente "1" *-- "1" LicenciaConducir
+    LicenciaConducir --> "1..*" CategoriaLicencia
+
+    Contrato "0..*" --> "1" Cliente : cliente
+    Contrato "0..*" --> "1" Vehiculo : vehiculo
+    Contrato "0..*" --> "1" Tarifa : tarifa
+    Contrato --> "1" EstadoContrato
+
+    Tarifa <|.. TarifaDiaria
+    Tarifa <|.. TarifaSemanal
+    Tarifa <|.. TarifaKilometraje
+
+    Agencia "1" o-- "0..*" Vehiculo
+    Agencia "1" o-- "0..*" Cliente
+    Agencia "1" o-- "0..*" Contrato
+
+    ServicioFlota --> "1" Agencia
+    ServicioClientes --> "1" Agencia
+    ServicioAlquiler --> "1" Agencia
+    GestorPersistencia ..> Agencia : serializa
+
+    Exception <|-- AlquilerException
+    AlquilerException <|-- VehiculoNoDisponibleException
+    AlquilerException <|-- ConductorNoHabilitadoException
+
+    Main ..> VentanaPrincipal : crea
+    VentanaPrincipal ..> FormularioAuto : abre
+    VentanaPrincipal --> ModeloTablaFlota
+    FormularioAuto --> ServicioFlota
+    ModeloTablaFlota --> ServicioFlota
+```
+
+## Estado de implementación
+
+| Clase | Paquete | Estado | Pendiente | Historia |
+| --- | --- | --- | --- | --- |
+| `Vehiculo` | `modelo.flota` | Parcial | `getLicenciaRequerida()`, `estaDisponible()`, `cambiarEstado()`, `actualizarKilometraje()` | #9, #10, #11 |
+| `Auto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
+| `EstadoVehiculo`, `TipoCaja` | `modelo.flota` | Hecho | — | #1 |
+| `Moto` | `modelo.flota` | Pendiente | Todo | #2 |
+| `Camioneta` | `modelo.flota` | Pendiente | Todo | #3 |
+| `Agencia` | `modelo` | Parcial | `clientes`, `contratos`, contadores y sus métodos | #6, #9 |
+| `ServicioFlota` | `servicio` | Parcial | `eliminarVehiculo()`, `filtrar()` | #4, #5 |
+| `AlquilerException` | `excepciones` | Hecho | — | #1 |
+| `Main`, `VentanaPrincipal`, `FormularioAuto`, `ModeloTablaFlota` | `vista` | Hecho para #1 | Crecen con cada historia | #1 |
+| `Cliente`, `LicenciaConducir`, `CategoriaLicencia`, `ServicioClientes` | `modelo.clientes`, `servicio` | Pendiente | Todo | #6, #7, #8 |
+| `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #12, #15 |
+| `Tarifa`, `TarifaDiaria`, `TarifaSemanal`, `TarifaKilometraje` | `modelo.tarifas` | Pendiente | Todo | #9, #13, #14 |
+| `VehiculoNoDisponibleException`, `ConductorNoHabilitadoException` | `excepciones` | Pendiente | Todo | #9, #10 |
+| `GestorPersistencia` | `persistencia` | Pendiente | Todo | #16 |
+
+## Notas de diseño
+
+- Las clases del modelo tienen getters públicos para los atributos que muestra la interfaz (`getPatente()`, `getMarca()`, `getModelo()`, `getAnio()`, `getKilometraje()`, `getPrecioBaseDiario()`, `getEstado()`). No se dibujan en el diagrama para no saturarlo.
+- `validarDatosPropios()` valida los datos propios de cada subclase y la llama `ServicioFlota.registrarVehiculo()`. En `Vehiculo` no valida nada; `Auto` exige puertas y pasajeros mayores a 0.
+- `ServicioFlota.registrarVehiculo()` rechaza con `AlquilerException`: patente vacía o en blanco, kilometraje o precio negativos y patente repetida (sin distinguir mayúsculas).
+- `getFactorTarifa()` es protegido: solo lo usa `getPrecioDiario()`.
+- El punto de entrada (`Main`) está en el paquete `vista`.

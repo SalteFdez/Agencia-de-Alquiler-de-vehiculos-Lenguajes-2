@@ -10,18 +10,18 @@ public abstract class Vehiculo {
     private final String color;
     private final int anio;
     private final int kilometraje;
-    private final double precioBase;
+    private final double precioBaseDiario;
     private EstadoVehiculo estado = EstadoVehiculo.DISPONIBLE;
 
     protected Vehiculo(String patente, String marca, String modelo, String color,
-                       int anio, int kilometraje, double precioBase) {
+                       int anio, int kilometraje, double precioBaseDiario) {
         this.patente = patente;
         this.marca = marca;
         this.modelo = modelo;
         this.color = color;
         this.anio = anio;
         this.kilometraje = kilometraje;
-        this.precioBase = precioBase;
+        this.precioBaseDiario = precioBaseDiario;
     }
 
     public String getPatente() {
@@ -32,8 +32,8 @@ public abstract class Vehiculo {
         return kilometraje;
     }
 
-    public double getPrecioBase() {
-        return precioBase;
+    public double getPrecioBaseDiario() {
+        return precioBaseDiario;
     }
 
     public String getMarca() {
@@ -60,6 +60,6 @@ public abstract class Vehiculo {
     protected abstract double getFactorTarifa();
 
     public double getPrecioDiario() {
-        return precioBase * getFactorTarifa();
+        return precioBaseDiario * getFactorTarifa();
     }
 }

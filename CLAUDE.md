@@ -24,7 +24,7 @@ Proyecto final integrador de Lenguajes 2 (Ingeniería en Informática): sistema 
 ## Referencias
 
 - Historias de usuario: `backlog.md`.
-- Diagrama de clases UML: `Alquiler de autos.drawio.png` (paquetes `modelo.flota`, `modelo.clientes`, `modelo.alquiler`, `modelo.tarifas`, `servicio`, `persistencia`, `excepciones`).
+- Diagrama de clases UML: `uml.md` (fuente de verdad en texto, con el estado de cada clase). `Alquiler de autos.drawio.png` es la versión visual y puede estar desactualizada.
 
 ## Forma de trabajo
 
