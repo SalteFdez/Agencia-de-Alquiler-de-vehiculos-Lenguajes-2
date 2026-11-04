@@ -34,4 +34,15 @@ class CamionetaTest {
 
         assertEquals("La capacidad de carga debe ser mayor a 0", error.getMessage());
     }
+
+    @Test
+    void unaCapacidadDeCargaNegativaLanzaExcepcion() {
+        Camioneta camioneta = new Camioneta("AC123DE", "Toyota", "Hilux", "Gris", 2022, 20000,
+                10000.0, -500.0, false);
+
+        AlquilerException error = assertThrows(AlquilerException.class,
+                camioneta::validarDatosPropios);
+
+        assertEquals("La capacidad de carga debe ser mayor a 0", error.getMessage());
+    }
 }
