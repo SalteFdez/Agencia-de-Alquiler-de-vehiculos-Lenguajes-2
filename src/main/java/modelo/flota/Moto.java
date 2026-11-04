@@ -1,5 +1,7 @@
 package modelo.flota;
 
+import excepciones.AlquilerException;
+
 public class Moto extends Vehiculo {
 
     private final int cilindrada;
@@ -15,6 +17,13 @@ public class Moto extends Vehiculo {
     @Override
     public String getTipo() {
         return "Moto";
+    }
+
+    @Override
+    public void validarDatosPropios() throws AlquilerException {
+        if (cilindrada <= 0) {
+            throw new AlquilerException("La cilindrada debe ser mayor a 0");
+        }
     }
 
     @Override

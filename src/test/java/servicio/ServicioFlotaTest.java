@@ -200,4 +200,30 @@ class ServicioFlotaTest {
         assertTrue(e.getMessage().contains("ya está registrada"));
         assertEquals(List.of(auto), servicio.listarVehiculos());
     }
+
+    @Test
+    void unaCilindradaIgualACeroLanzaExcepcionYNoRegistra() {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Moto sinCilindrada = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, 0, true);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(sinCilindrada));
+
+        assertTrue(e.getMessage().contains("cilindrada debe ser mayor a 0"));
+        assertTrue(servicio.listarVehiculos().isEmpty());
+    }
+
+    @Test
+    void unaCilindradaNegativaLanzaExcepcionYNoRegistra() {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Moto cilindradaNegativa = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, -125, true);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(cilindradaNegativa));
+
+        assertTrue(e.getMessage().contains("cilindrada debe ser mayor a 0"));
+        assertTrue(servicio.listarVehiculos().isEmpty());
+    }
 }
