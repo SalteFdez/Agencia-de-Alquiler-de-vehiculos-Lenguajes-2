@@ -22,6 +22,10 @@ public abstract class Vehiculo {
         this.precioBase = precioBase;
     }
 
+    public String getPatente() {
+        return patente;
+    }
+
     public EstadoVehiculo getEstado() {
         return estado;
     }

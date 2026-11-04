@@ -1,8 +1,11 @@
 package servicio;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import excepciones.AlquilerException;
 import modelo.Agencia;
 import modelo.flota.Auto;
 import modelo.flota.EstadoVehiculo;
