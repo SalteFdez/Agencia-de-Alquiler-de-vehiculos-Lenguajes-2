@@ -22,12 +22,16 @@ public class VentanaPrincipal extends JFrame {
         JButton agregarMoto = new JButton("Agregar moto");
         agregarMoto.addActionListener(e ->
                 new FormularioMoto(this, servicio, modelo::fireTableDataChanged).setVisible(true));
+        JButton agregarCamioneta = new JButton("Agregar camioneta");
+        agregarCamioneta.addActionListener(e ->
+                new FormularioCamioneta(this, servicio, modelo::fireTableDataChanged).setVisible(true));
 
         JPanel flota = new JPanel(new BorderLayout());
         flota.add(new JScrollPane(new JTable(modelo)), BorderLayout.CENTER);
         JPanel botones = new JPanel();
         botones.add(agregarAuto);
         botones.add(agregarMoto);
+        botones.add(agregarCamioneta);
         flota.add(botones, BorderLayout.SOUTH);
 
         JTabbedPane pestanias = new JTabbedPane();
