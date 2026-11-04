@@ -57,6 +57,10 @@ public abstract class Vehiculo {
         return estado;
     }
 
+    public void cambiarEstado(EstadoVehiculo e) {
+        this.estado = e;
+    }
+
     protected abstract double getFactorTarifa();
 
     public double getPrecioDiario() {

@@ -41,7 +41,9 @@ public class ServicioFlota {
     public List<Vehiculo> filtrar(String tipo, EstadoVehiculo estado) {
         List<Vehiculo> resultado = new ArrayList<>();
         for (Vehiculo v : agencia.getVehiculos()) {
-            if (tipo == null || v.getTipo().equals(tipo)) {
+            boolean cumpleTipo = tipo == null || v.getTipo().equals(tipo);
+            boolean cumpleEstado = estado == null || v.getEstado() == estado;
+            if (cumpleTipo && cumpleEstado) {
                 resultado.add(v);
             }
         }
