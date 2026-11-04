@@ -16,14 +16,18 @@ public class VentanaPrincipal extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         ModeloTablaFlota modelo = new ModeloTablaFlota(servicio);
-        JButton agregar = new JButton("Agregar auto");
-        agregar.addActionListener(e ->
+        JButton agregarAuto = new JButton("Agregar auto");
+        agregarAuto.addActionListener(e ->
                 new FormularioAuto(this, servicio, modelo::fireTableDataChanged).setVisible(true));
+        JButton agregarMoto = new JButton("Agregar moto");
+        agregarMoto.addActionListener(e ->
+                new FormularioMoto(this, servicio, modelo::fireTableDataChanged).setVisible(true));
 
         JPanel flota = new JPanel(new BorderLayout());
         flota.add(new JScrollPane(new JTable(modelo)), BorderLayout.CENTER);
         JPanel botones = new JPanel();
-        botones.add(agregar);
+        botones.add(agregarAuto);
+        botones.add(agregarMoto);
         flota.add(botones, BorderLayout.SOUTH);
 
         JTabbedPane pestanias = new JTabbedPane();
