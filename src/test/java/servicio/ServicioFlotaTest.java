@@ -9,6 +9,7 @@ import excepciones.AlquilerException;
 import modelo.Agencia;
 import modelo.flota.Auto;
 import modelo.flota.EstadoVehiculo;
+import modelo.flota.Moto;
 import modelo.flota.TipoCaja;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -170,5 +171,17 @@ class ServicioFlotaTest {
 
         assertTrue(e.getMessage().contains("pasajeros"));
         assertTrue(servicio.listarVehiculos().isEmpty());
+    }
+
+    @Test
+    void registrarUnaMotoConDatosValidosLaAgregaALaListaEnEstadoDisponible() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Moto moto = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, 125, true);
+
+        servicio.registrarVehiculo(moto);
+
+        assertEquals(List.of(moto), servicio.listarVehiculos());
+        assertEquals(EstadoVehiculo.DISPONIBLE, servicio.listarVehiculos().get(0).getEstado());
     }
 }

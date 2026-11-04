@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import excepciones.AlquilerException;
 import modelo.Agencia;
 import modelo.flota.Auto;
+import modelo.flota.Moto;
 import modelo.flota.TipoCaja;
 import org.junit.jupiter.api.Test;
 import servicio.ServicioFlota;
@@ -37,5 +38,24 @@ class ModeloTablaFlotaTest {
         assertEquals(15000, modelo.getValueAt(0, 5));
         assertEquals("DISPONIBLE", modelo.getValueAt(0, 6));
         assertEquals(11500.0, (double) modelo.getValueAt(0, 7), 0.001);
+    }
+
+    @Test
+    void laFilaDeUnaMotoMuestraTipoMotoEstadoDisponibleYPrecioPorCeroSeis() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        servicio.registrarVehiculo(new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023,
+                5000, 10000.0, 125, true));
+
+        ModeloTablaFlota modelo = new ModeloTablaFlota(servicio);
+
+        assertEquals(1, modelo.getRowCount());
+        assertEquals("A123BCD", modelo.getValueAt(0, 0));
+        assertEquals("Moto", modelo.getValueAt(0, 1));
+        assertEquals("Honda", modelo.getValueAt(0, 2));
+        assertEquals("CB125", modelo.getValueAt(0, 3));
+        assertEquals(2023, modelo.getValueAt(0, 4));
+        assertEquals(5000, modelo.getValueAt(0, 5));
+        assertEquals("DISPONIBLE", modelo.getValueAt(0, 6));
+        assertEquals(6000.0, (double) modelo.getValueAt(0, 7), 0.001);
     }
 }
