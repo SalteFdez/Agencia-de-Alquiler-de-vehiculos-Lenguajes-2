@@ -1,5 +1,7 @@
 package modelo.flota;
 
+import excepciones.AlquilerException;
+
 public class Camioneta extends Vehiculo {
 
     private final double capacidadCargaKg;
@@ -16,6 +18,13 @@ public class Camioneta extends Vehiculo {
     @Override
     public String getTipo() {
         return "Camioneta";
+    }
+
+    @Override
+    public void validarDatosPropios() throws AlquilerException {
+        if (capacidadCargaKg <= 0) {
+            throw new AlquilerException("La capacidad de carga debe ser mayor a 0");
+        }
     }
 
     @Override

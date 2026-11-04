@@ -1,7 +1,9 @@
 package modelo.flota;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import excepciones.AlquilerException;
 import org.junit.jupiter.api.Test;
 
 class CamionetaTest {
@@ -20,5 +22,16 @@ class CamionetaTest {
                 10000.0, 1000.0, true);
 
         assertEquals(16000.0, camioneta.getPrecioDiario(), 0.001);
+    }
+
+    @Test
+    void unaCapacidadDeCargaIgualACeroLanzaExcepcion() {
+        Camioneta camioneta = new Camioneta("AC123DE", "Toyota", "Hilux", "Gris", 2022, 20000,
+                10000.0, 0.0, false);
+
+        AlquilerException error = assertThrows(AlquilerException.class,
+                camioneta::validarDatosPropios);
+
+        assertEquals("La capacidad de carga debe ser mayor a 0", error.getMessage());
     }
 }
