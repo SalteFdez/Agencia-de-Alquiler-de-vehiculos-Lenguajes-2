@@ -93,4 +93,17 @@ class ServicioFlotaTest {
         assertTrue(e.getMessage().contains("patente"));
         assertTrue(servicio.listarVehiculos().isEmpty());
     }
+
+    @Test
+    void unKilometrajeNegativoLanzaExcepcionDeValidacionYNoRegistra() {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto kmNegativo = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, -1,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(kmNegativo));
+
+        assertTrue(e.getMessage().contains("kilometraje"));
+        assertTrue(servicio.listarVehiculos().isEmpty());
+    }
 }

@@ -26,6 +26,10 @@ public abstract class Vehiculo {
         return patente;
     }
 
+    public int getKilometraje() {
+        return kilometraje;
+    }
+
     public EstadoVehiculo getEstado() {
         return estado;
     }
