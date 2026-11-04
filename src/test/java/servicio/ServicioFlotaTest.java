@@ -80,4 +80,17 @@ class ServicioFlotaTest {
         assertTrue(e.getMessage().contains("patente"));
         assertTrue(servicio.listarVehiculos().isEmpty());
     }
+
+    @Test
+    void unaPatenteConSoloEspaciosCuentaComoVaciaYNoRegistra() {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto patenteEnBlanco = new Auto("   ", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(patenteEnBlanco));
+
+        assertTrue(e.getMessage().contains("patente"));
+        assertTrue(servicio.listarVehiculos().isEmpty());
+    }
 }

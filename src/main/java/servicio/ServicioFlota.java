@@ -15,7 +15,7 @@ public class ServicioFlota {
     }
 
     public void registrarVehiculo(Vehiculo v) throws AlquilerException {
-        if (v.getPatente().isEmpty()) {
+        if (v.getPatente().trim().isEmpty()) {
             throw new AlquilerException("La patente no puede estar vacía");
         }
         for (Vehiculo existente : agencia.getVehiculos()) {
