@@ -2,6 +2,7 @@ package vista;
 
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
 import servicio.ServicioFlota;
 
@@ -12,14 +13,22 @@ public class ModeloTablaFlota extends AbstractTableModel {
     };
 
     private final ServicioFlota servicio;
+    private String filtroTipo;
+    private EstadoVehiculo filtroEstado;
 
     public ModeloTablaFlota(ServicioFlota servicio) {
         this.servicio = servicio;
     }
 
+    public void setFiltro(String tipo, EstadoVehiculo estado) {
+        this.filtroTipo = tipo;
+        this.filtroEstado = estado;
+        fireTableDataChanged();
+    }
+
     @Override
     public int getRowCount() {
-        return servicio.listarVehiculos().size();
+        return servicio.filtrar(filtroTipo, filtroEstado).size();
     }
 
     @Override
@@ -34,7 +43,7 @@ public class ModeloTablaFlota extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int fila, int columna) {
-        List<Vehiculo> vehiculos = servicio.listarVehiculos();
+        List<Vehiculo> vehiculos = servicio.filtrar(filtroTipo, filtroEstado);
         Vehiculo v = vehiculos.get(fila);
         switch (columna) {
             case 0: return v.getPatente();
