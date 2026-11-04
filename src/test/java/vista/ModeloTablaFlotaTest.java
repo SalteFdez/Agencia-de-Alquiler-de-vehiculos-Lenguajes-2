@@ -174,4 +174,25 @@ class ModeloTablaFlotaTest {
 
         assertEquals(moto, modelo.getVehiculoEn(0));
     }
+
+    @Test
+    void trasDarDeBajaUnVehiculoLaTablaFiltradaYaNoLoMuestraYConservaElFiltro() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto cronos = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022,
+                15000, 10000.0, 4, 5, TipoCaja.MANUAL);
+        Auto argo = new Auto("AC456EF", "Fiat", "Argo", "Negro", 2021,
+                30000, 10000.0, 4, 5, TipoCaja.MANUAL);
+        servicio.registrarVehiculo(cronos);
+        servicio.registrarVehiculo(new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023,
+                5000, 10000.0, 125, true));
+        servicio.registrarVehiculo(argo);
+        ModeloTablaFlota modelo = new ModeloTablaFlota(servicio);
+        modelo.setFiltro("Auto", null);
+
+        servicio.eliminarVehiculo(modelo.getVehiculoEn(0));
+        modelo.fireTableDataChanged();
+
+        assertEquals(1, modelo.getRowCount());
+        assertEquals(argo, modelo.getVehiculoEn(0));
+    }
 }
