@@ -16,6 +16,11 @@ public class Auto extends Vehiculo {
     }
 
     @Override
+    public String getTipo() {
+        return "Auto";
+    }
+
+    @Override
     protected double getFactorTarifa() {
         return tipoCaja == TipoCaja.AUTOMATICA ? 1.15 : 1.0;
     }

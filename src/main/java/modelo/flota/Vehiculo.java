@@ -34,6 +34,20 @@ public abstract class Vehiculo {
         return precioBase;
     }
 
+    public String getMarca() {
+        return marca;
+    }
+
+    public String getModelo() {
+        return modelo;
+    }
+
+    public int getAnio() {
+        return anio;
+    }
+
+    public abstract String getTipo();
+
     public EstadoVehiculo getEstado() {
         return estado;
     }
