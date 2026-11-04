@@ -26,6 +26,10 @@ public class ModeloTablaFlota extends AbstractTableModel {
         fireTableDataChanged();
     }
 
+    public Vehiculo getVehiculoEn(int fila) {
+        return servicio.filtrar(filtroTipo, filtroEstado).get(fila);
+    }
+
     @Override
     public int getRowCount() {
         return servicio.filtrar(filtroTipo, filtroEstado).size();
