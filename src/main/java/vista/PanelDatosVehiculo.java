@@ -17,7 +17,7 @@ public class PanelDatosVehiculo extends JPanel {
     private final JTextField color = new JTextField(15);
     private final JTextField anio = new JTextField(15);
     private final JTextField kilometraje = new JTextField(15);
-    private final JTextField precioBase = new JTextField(15);
+    private final JTextField precioBaseDiario = new JTextField(15);
 
     public PanelDatosVehiculo() {
         super(new GridLayout(0, 2, 8, 8));
@@ -28,7 +28,7 @@ public class PanelDatosVehiculo extends JPanel {
         agregar("Color", color);
         agregar("Año", anio);
         agregar("Kilometraje", kilometraje);
-        agregar("Precio base diario", precioBase);
+        agregar("Precio base diario", precioBaseDiario);
     }
 
     public void agregar(String etiqueta, Component campo) {
@@ -60,8 +60,8 @@ public class PanelDatosVehiculo extends JPanel {
         return entero("Kilometraje", kilometraje);
     }
 
-    public double getPrecioBase() throws AlquilerException {
-        return decimal("Precio base diario", precioBase);
+    public double getPrecioBaseDiario() throws AlquilerException {
+        return decimal("Precio base diario", precioBaseDiario);
     }
 
     static int entero(String etiqueta, JTextField campo) throws AlquilerException {

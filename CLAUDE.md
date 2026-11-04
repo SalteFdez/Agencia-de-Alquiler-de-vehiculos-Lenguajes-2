@@ -29,4 +29,5 @@ Proyecto final integrador de Lenguajes 2 (Ingeniería en Informática): sistema 
 ## Forma de trabajo
 
 - Refinar una historia con `/story` antes de programarla y luego implementarla con `/pair`.
+- Los nombres del código siguen la "Regla de nombres" de `uml.md`. Al terminar cada historia, `uml.md` se actualiza en el mismo paso.
 - Los errores de validación se muestran al usuario en un cuadro de diálogo, sin cerrar la aplicación.

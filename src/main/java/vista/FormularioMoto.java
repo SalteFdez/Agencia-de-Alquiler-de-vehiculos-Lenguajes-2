@@ -48,7 +48,7 @@ public class FormularioMoto extends JDialog {
         try {
             Moto moto = new Moto(
                     datos.getPatente(), datos.getMarca(), datos.getModelo(), datos.getColor(),
-                    datos.getAnio(), datos.getKilometraje(), datos.getPrecioBase(),
+                    datos.getAnio(), datos.getKilometraje(), datos.getPrecioBaseDiario(),
                     PanelDatosVehiculo.entero("Cilindrada", cilindrada),
                     incluyeCasco.isSelected());
             servicio.registrarVehiculo(moto);

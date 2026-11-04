@@ -51,7 +51,7 @@ public class FormularioAuto extends JDialog {
         try {
             Auto auto = new Auto(
                     datos.getPatente(), datos.getMarca(), datos.getModelo(), datos.getColor(),
-                    datos.getAnio(), datos.getKilometraje(), datos.getPrecioBase(),
+                    datos.getAnio(), datos.getKilometraje(), datos.getPrecioBaseDiario(),
                     PanelDatosVehiculo.entero("Cantidad de puertas", puertas),
                     PanelDatosVehiculo.entero("Capacidad de pasajeros", pasajeros),
                     (TipoCaja) caja.getSelectedItem());

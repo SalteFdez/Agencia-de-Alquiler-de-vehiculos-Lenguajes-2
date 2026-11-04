@@ -2,9 +2,16 @@
 
 Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y métodos del código deben coincidir con este archivo. Si el diseño cambia durante una historia, actualizar este archivo en el mismo paso.
 
+## Regla de nombres
+
+- Todo nombre de clase, atributo, método o parámetro del modelo y los servicios se escribe **exactamente** como figura en este archivo.
+- Lo mismo vale para la vista cuando el dato es el mismo: un campo de formulario o un getter que representa un atributo del modelo usa el nombre de ese atributo (por ejemplo `precioBaseDiario` y `getPrecioBaseDiario()`, no `precioBase`).
+- Si hace falta un nombre que no está acá, primero se agrega a este archivo y después se usa en el código.
+- Antes de dar por terminada una historia, comparar los nombres del código con este archivo y actualizar el diagrama, la tabla de estado y las notas.
+
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #1 terminada (registrar un auto y verlo en la lista).
+Última actualización: historia #2 terminada (registrar una moto).
 
 ## Diagrama
 
@@ -24,6 +31,39 @@ classDiagram
             -alRegistrar: Runnable
             +FormularioAuto(padre: Frame, servicio: ServicioFlota, alRegistrar: Runnable)
             -guardar() void
+        }
+        class FormularioMoto {
+            -servicio: ServicioFlota
+            -alRegistrar: Runnable
+            +FormularioMoto(padre: Frame, servicio: ServicioFlota, alRegistrar: Runnable)
+            -guardar() void
+        }
+        class FormularioCamioneta {
+            -servicio: ServicioFlota
+            -alRegistrar: Runnable
+            -capacidadCargaKg: JTextField
+            -traccion4x4: JCheckBox
+            +FormularioCamioneta(padre: Frame, servicio: ServicioFlota, alRegistrar: Runnable)
+            -guardar() void
+        }
+        class PanelDatosVehiculo {
+            -patente: JTextField
+            -marca: JTextField
+            -modelo: JTextField
+            -color: JTextField
+            -anio: JTextField
+            -kilometraje: JTextField
+            -precioBaseDiario: JTextField
+            +agregar(etiqueta: String, campo: Component) void
+            +getPatente() String
+            +getMarca() String
+            +getModelo() String
+            +getColor() String
+            +getAnio() int
+            +getKilometraje() int
+            +getPrecioBaseDiario() double
+            ~entero(etiqueta: String, campo: JTextField)$ int
+            ~decimal(etiqueta: String, campo: JTextField)$ double
         }
         class ModeloTablaFlota {
             -COLUMNAS: String[]$
@@ -114,6 +154,7 @@ classDiagram
             -incluyeCasco: boolean
             +getTipo() String
             #getFactorTarifa() double
+            +validarDatosPropios() void
             +getLicenciaRequerida() CategoriaLicencia
         }
         class Camioneta {
@@ -121,6 +162,7 @@ classDiagram
             -traccion4x4: boolean
             +getTipo() String
             #getFactorTarifa() double
+            +validarDatosPropios() void
             +getLicenciaRequerida() CategoriaLicencia
         }
         class EstadoVehiculo {
@@ -260,8 +302,15 @@ classDiagram
 
     Main ..> VentanaPrincipal : crea
     VentanaPrincipal ..> FormularioAuto : abre
+    VentanaPrincipal ..> FormularioMoto : abre
+    VentanaPrincipal ..> FormularioCamioneta : abre
     VentanaPrincipal --> ModeloTablaFlota
     FormularioAuto --> ServicioFlota
+    FormularioMoto --> ServicioFlota
+    FormularioCamioneta --> ServicioFlota
+    FormularioAuto *-- PanelDatosVehiculo
+    FormularioMoto *-- PanelDatosVehiculo
+    FormularioCamioneta *-- PanelDatosVehiculo
     ModeloTablaFlota --> ServicioFlota
 ```
 
@@ -272,12 +321,12 @@ classDiagram
 | `Vehiculo` | `modelo.flota` | Parcial | `getLicenciaRequerida()`, `estaDisponible()`, `cambiarEstado()`, `actualizarKilometraje()` | #9, #10, #11 |
 | `Auto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `EstadoVehiculo`, `TipoCaja` | `modelo.flota` | Hecho | — | #1 |
-| `Moto` | `modelo.flota` | Pendiente | Todo | #2 |
+| `Moto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `Camioneta` | `modelo.flota` | Pendiente | Todo | #3 |
 | `Agencia` | `modelo` | Parcial | `clientes`, `contratos`, contadores y sus métodos | #6, #9 |
 | `ServicioFlota` | `servicio` | Parcial | `eliminarVehiculo()`, `filtrar()` | #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `FormularioAuto`, `ModeloTablaFlota` | `vista` | Hecho para #1 | Crecen con cada historia | #1 |
+| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `PanelDatosVehiculo`, `ModeloTablaFlota` | `vista` | Hecho para #2 | Crecen con cada historia | #1, #2 |
 | `Cliente`, `LicenciaConducir`, `CategoriaLicencia`, `ServicioClientes` | `modelo.clientes`, `servicio` | Pendiente | Todo | #6, #7, #8 |
 | `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #12, #15 |
 | `Tarifa`, `TarifaDiaria`, `TarifaSemanal`, `TarifaKilometraje` | `modelo.tarifas` | Pendiente | Todo | #9, #13, #14 |
@@ -287,7 +336,8 @@ classDiagram
 ## Notas de diseño
 
 - Las clases del modelo tienen getters públicos para los atributos que muestra la interfaz (`getPatente()`, `getMarca()`, `getModelo()`, `getAnio()`, `getKilometraje()`, `getPrecioBaseDiario()`, `getEstado()`). No se dibujan en el diagrama para no saturarlo.
-- `validarDatosPropios()` valida los datos propios de cada subclase y la llama `ServicioFlota.registrarVehiculo()`. En `Vehiculo` no valida nada; `Auto` exige puertas y pasajeros mayores a 0.
+- `validarDatosPropios()` valida los datos propios de cada subclase y la llama `ServicioFlota.registrarVehiculo()`. En `Vehiculo` no valida nada; `Auto` exige puertas y pasajeros mayores a 0; `Moto` exige cilindrada mayor a 0.
+- `PanelDatosVehiculo` tiene los 7 campos comunes del formulario. Cada formulario de vehículo lo contiene y le agrega sus campos propios con `agregar()`.
 - `ServicioFlota.registrarVehiculo()` rechaza con `AlquilerException`: patente vacía o en blanco, kilometraje o precio negativos y patente repetida (sin distinguir mayúsculas).
 - `getFactorTarifa()` es protegido: solo lo usa `getPrecioDiario()`.
 - El punto de entrada (`Main`) está en el paquete `vista`.
