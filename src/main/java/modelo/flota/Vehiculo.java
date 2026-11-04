@@ -9,6 +9,7 @@ public abstract class Vehiculo {
     private final int anio;
     private final int kilometraje;
     private final double precioBase;
+    private EstadoVehiculo estado = EstadoVehiculo.DISPONIBLE;
 
     protected Vehiculo(String patente, String marca, String modelo, String color,
                        int anio, int kilometraje, double precioBase) {
@@ -19,6 +20,10 @@ public abstract class Vehiculo {
         this.anio = anio;
         this.kilometraje = kilometraje;
         this.precioBase = precioBase;
+    }
+
+    public EstadoVehiculo getEstado() {
+        return estado;
     }
 
     protected abstract double getFactorTarifa();
