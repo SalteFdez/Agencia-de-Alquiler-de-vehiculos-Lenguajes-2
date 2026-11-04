@@ -1,5 +1,7 @@
 package modelo.flota;
 
+import excepciones.AlquilerException;
+
 public class Auto extends Vehiculo {
 
     private final int puertas;
@@ -18,6 +20,16 @@ public class Auto extends Vehiculo {
     @Override
     public String getTipo() {
         return "Auto";
+    }
+
+    @Override
+    public void validarDatosPropios() throws AlquilerException {
+        if (puertas <= 0) {
+            throw new AlquilerException("La cantidad de puertas debe ser mayor a 0");
+        }
+        if (capacidadPasajeros <= 0) {
+            throw new AlquilerException("La capacidad de pasajeros debe ser mayor a 0");
+        }
     }
 
     @Override

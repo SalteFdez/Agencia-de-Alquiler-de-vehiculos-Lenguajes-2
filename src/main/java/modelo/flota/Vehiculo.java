@@ -1,5 +1,7 @@
 package modelo.flota;
 
+import excepciones.AlquilerException;
+
 public abstract class Vehiculo {
 
     private final String patente;
@@ -47,6 +49,9 @@ public abstract class Vehiculo {
     }
 
     public abstract String getTipo();
+
+    public void validarDatosPropios() throws AlquilerException {
+    }
 
     public EstadoVehiculo getEstado() {
         return estado;

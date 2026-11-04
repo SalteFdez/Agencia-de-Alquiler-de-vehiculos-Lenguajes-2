@@ -11,6 +11,8 @@ import modelo.flota.Auto;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.TipoCaja;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ServicioFlotaTest {
 
@@ -140,5 +142,33 @@ class ServicioFlotaTest {
         servicio.registrarVehiculo(precioCero);
 
         assertEquals(List.of(precioCero), servicio.listarVehiculos());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void unaCantidadDePuertasCeroONegativaLanzaExcepcionYNoRegistra(int puertas) {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, puertas, 5, TipoCaja.MANUAL);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(auto));
+
+        assertTrue(e.getMessage().contains("puertas"));
+        assertTrue(servicio.listarVehiculos().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void unaCapacidadDePasajerosCeroONegativaLanzaExcepcionYNoRegistra(int pasajeros) {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, pasajeros, TipoCaja.MANUAL);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarVehiculo(auto));
+
+        assertTrue(e.getMessage().contains("pasajeros"));
+        assertTrue(servicio.listarVehiculos().isEmpty());
     }
 }
