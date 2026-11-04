@@ -329,4 +329,21 @@ class ServicioFlotaTest {
         assertEquals(List.of(auto), servicio.filtrar(null, EstadoVehiculo.DISPONIBLE));
         assertEquals(List.of(moto), servicio.filtrar(null, EstadoVehiculo.ALQUILADO));
     }
+
+    @Test
+    void filtrarPorTipoYEstadoDevuelveSoloLosQueCumplenAmbos() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto autoDisponible = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Auto autoAlquilado = new Auto("AC456EF", "Fiat", "Argo", "Negro", 2021, 30000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Moto motoDisponible = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000,
+                10000.0, 125, true);
+        servicio.registrarVehiculo(autoDisponible);
+        servicio.registrarVehiculo(autoAlquilado);
+        servicio.registrarVehiculo(motoDisponible);
+        autoAlquilado.cambiarEstado(EstadoVehiculo.ALQUILADO);
+
+        assertEquals(List.of(autoDisponible), servicio.filtrar("Auto", EstadoVehiculo.DISPONIBLE));
+    }
 }
