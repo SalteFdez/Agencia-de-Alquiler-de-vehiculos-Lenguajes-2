@@ -30,6 +30,10 @@ public abstract class Vehiculo {
         return kilometraje;
     }
 
+    public double getPrecioBase() {
+        return precioBase;
+    }
+
     public EstadoVehiculo getEstado() {
         return estado;
     }
