@@ -28,6 +28,7 @@ classDiagram
             -comboEstado: JComboBox~String~
             -tablaFlota: JTable
             -darDeBaja: JButton
+            -campoBusqueda: JTextField
             -tablaClientes: JTable
             -agregarCliente: JButton
             +VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes)
@@ -105,6 +106,8 @@ classDiagram
             -COLUMNAS: String[]$
             -FORMATO_FECHA: DateTimeFormatter$
             -servicio: ServicioClientes
+            -filtroTexto: String
+            +setFiltro(texto: String) void
             +getRowCount() int
             +getColumnCount() int
             +getColumnName(columna: int) String

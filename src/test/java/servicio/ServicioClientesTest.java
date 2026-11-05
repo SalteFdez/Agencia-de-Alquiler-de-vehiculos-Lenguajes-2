@@ -15,6 +15,7 @@ import modelo.clientes.LicenciaConducir;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ServicioClientesTest {
@@ -23,6 +24,12 @@ class ServicioClientesTest {
         LicenciaConducir licencia = new LicenciaConducir("L123456",
                 Set.of(CategoriaLicencia.B), LocalDate.now().plusYears(3));
         return new Cliente("Ana", "Gomez", dni, LocalDate.of(1990, 5, 20), "3874123456", licencia);
+    }
+
+    private static Cliente cliente(String nombre, String apellido, String dni) {
+        LicenciaConducir licencia = new LicenciaConducir("L123456",
+                Set.of(CategoriaLicencia.B), LocalDate.now().plusYears(3));
+        return new Cliente(nombre, apellido, dni, LocalDate.of(1990, 5, 20), "3874123456", licencia);
     }
 
     private static Cliente clienteConCampo(String campo, String valor) {
@@ -134,5 +141,63 @@ class ServicioClientesTest {
         servicio.registrarCliente(cliente);
 
         assertEquals(List.of(cliente), servicio.listarClientes());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "   "})
+    void buscarConTextoNuloVacioOEnBlancoDevuelveTodosEnOrdenDeRegistro(String texto)
+            throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente primero = cliente("30123456");
+        Cliente segundo = cliente("27987654");
+        servicio.registrarCliente(primero);
+        servicio.registrarCliente(segundo);
+
+        assertEquals(List.of(primero, segundo), servicio.buscarPorTexto(texto));
+    }
+
+    @Test
+    void buscarPorParteDelNombreDevuelveSoloLosQueCoinciden() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        Cliente luis = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(ana);
+        servicio.registrarCliente(luis);
+
+        assertEquals(List.of(luis), servicio.buscarPorTexto("lu"));
+    }
+
+    @Test
+    void buscarPorParteDelApellidoDevuelveSoloLosQueCoinciden() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        Cliente luis = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(ana);
+        servicio.registrarCliente(luis);
+
+        assertEquals(List.of(luis), servicio.buscarPorTexto("ere"));
+    }
+
+    @Test
+    void buscarPorParteDelDniDevuelveSoloLosQueCoinciden() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente primero = cliente("30123456");
+        Cliente segundo = cliente("27987654");
+        servicio.registrarCliente(primero);
+        servicio.registrarCliente(segundo);
+
+        assertEquals(List.of(segundo), servicio.buscarPorTexto("9876"));
+    }
+
+    @Test
+    void buscarPorParteDelNombreCompletoEncuentraAlCliente() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente gomez = cliente("Ana", "Gomez", "30123456");
+        Cliente lopez = cliente("Ana", "Lopez", "27987654");
+        servicio.registrarCliente(gomez);
+        servicio.registrarCliente(lopez);
+
+        assertEquals(List.of(gomez), servicio.buscarPorTexto("ana g"));
     }
 }

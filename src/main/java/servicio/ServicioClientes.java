@@ -39,6 +39,23 @@ public class ServicioClientes {
         }
     }
 
+    public List<Cliente> buscarPorTexto(String texto) {
+        if (texto == null || texto.isBlank()) {
+            return listarClientes();
+        }
+        String buscado = texto.toLowerCase();
+        List<Cliente> encontrados = new ArrayList<>();
+        for (Cliente c : agencia.getClientes()) {
+            if (c.getNombre().toLowerCase().contains(buscado)
+                    || c.getApellido().toLowerCase().contains(buscado)
+                    || c.getNombreCompleto().toLowerCase().contains(buscado)
+                    || c.getDni().contains(buscado)) {
+                encontrados.add(c);
+            }
+        }
+        return encontrados;
+    }
+
     public List<Cliente> listarClientes() {
         return new ArrayList<>(agencia.getClientes());
     }

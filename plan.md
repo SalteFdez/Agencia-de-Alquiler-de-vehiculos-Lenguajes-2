@@ -1,40 +1,30 @@
-# Plan — Historia #6 (borrar al terminar la historia)
+# Plan — Historia #7 (borrar al terminar la historia)
 
 ## Story
-Como operador, quiero registrar un cliente con su licencia y verlo en la lista de clientes, para poder alquilarle.
+Como operador, quiero buscar clientes por nombre o DNI, para encontrarlos sin recorrer toda la lista.
 
 ## Acceptance criteria
-- [ ] Dado que estoy en la pestaña Clientes, cuando cargo nombre, apellido, DNI, fecha de nacimiento, teléfono, número de licencia, una o más categorías de licencia (A, B, C, D, E) y la fecha de vencimiento de la licencia y guardo, entonces el cliente aparece en la lista con un número de cliente asignado automáticamente, su nombre completo, DNI, teléfono, categorías y vencimiento de la licencia.
-- [ ] Dado que dejo un dato obligatorio vacío, no elijo ninguna categoría, escribo una fecha que no tiene el formato dd/mm/aaaa o cargo un DNI que ya tiene otro cliente, cuando guardo, entonces veo un mensaje que indica el problema y el cliente no se registra.
-- [ ] Dado que el cliente tiene menos de 18 años o su licencia ya está vencida, cuando guardo, entonces el cliente se registra igual y veo una advertencia que indica que todavía no va a poder alquilar.
+- [ ] Dado que hay clientes registrados, cuando escribo parte de un nombre, un apellido o un DNI en el campo de búsqueda de la pestaña Clientes, entonces la lista muestra solo los clientes que coinciden, sin distinguir mayúsculas de minúsculas.
+- [ ] Dado que escribí algo en el campo de búsqueda, cuando lo borro, entonces la lista vuelve a mostrar todos los clientes; si ningún cliente coincide, la lista queda vacía.
+- [ ] Dado que hay un texto de búsqueda escrito, cuando registro un cliente nuevo, entonces la lista sigue filtrada y el cliente nuevo aparece solo si coincide con la búsqueda.
 
 ## Plan
-- Modelo: la categoría de licencia, la licencia de conducir (número, categorías y vencimiento, y si está vigente en una fecha) y el cliente con sus datos, su edad y su licencia.
-- Agencia: guarda también la lista de clientes y el contador para numerarlos.
-- Servicio de clientes: valida los datos obligatorios, que haya al menos una categoría y que el DNI no se repita; asigna el número de cliente y lo registra.
-- Interfaz: una pestaña Clientes con su tabla y un botón "Agregar cliente" que abre un formulario con los datos, una casilla por categoría y las fechas en formato dd/mm/aaaa. Los errores se muestran en un mensaje y la advertencia del tercer criterio en un aviso después de registrar.
+- Servicio: una operación que devuelve los clientes cuyo nombre, apellido, nombre completo o DNI contienen el texto buscado; un texto vacío devuelve todos.
+- Interfaz: un campo de texto "Buscar" arriba de la tabla de la pestaña Clientes.
+- La tabla se actualiza mientras se escribe, sin botón, y conserva la búsqueda al registrar un cliente.
 - Al terminar: comparar los nombres del código con `uml.md` y actualizarlo (diagrama, tabla de estado y notas).
 
 ## Nombres obligatorios (según `uml.md`)
-- Paquete `modelo.clientes`:
-    - `CategoriaLicencia` (enum): `A`, `B`, `C`, `D`, `E`.
-    - `LicenciaConducir`: atributos `numero: String`, `categorias: Set<CategoriaLicencia>`, `fechaVencimiento: LocalDate`; constructor `LicenciaConducir(numero, categorias, fechaVencimiento)`; métodos `estaVigente(fecha: LocalDate): boolean` y los getters `getNumero()`, `getCategorias()`, `getFechaVencimiento()`.
-    - `Cliente`: atributos `id: int`, `nombre`, `apellido`, `dni`, `fechaNacimiento: LocalDate`, `telefono`, `licencia: LicenciaConducir` y la constante `EDAD_MINIMA: int = 18`; constructor `Cliente(nombre, apellido, dni, fechaNacimiento, telefono, licencia)` (sin `id`); métodos `getNombreCompleto(): String` (nombre y apellido separados por un espacio), `getEdad(): int` y los getters de cada atributo.
-- `Cliente.setId(id: int): void` es un nombre nuevo: lo usa el servicio para asignar el número.
-- `Agencia`: `clientes: List<Cliente>`, `ultimoIdCliente: int`, `getClientes(): List<Cliente>` y `siguienteIdCliente(): int` (devuelve 1, 2, 3…).
-- Servicio: `ServicioClientes(agencia: Agencia)`, `registrarCliente(c: Cliente): void` (lanza `AlquilerException`) y `listarClientes(): List<Cliente>`.
-- Mensajes de error: "El campo <nombre del campo> es obligatorio", "La licencia debe tener al menos una categoría", "El DNI <dni> ya está registrado" y, desde el formulario, "La fecha <campo> debe tener el formato dd/mm/aaaa".
-- Advertencia: la decide el formulario después de registrar, con `getEdad() < Cliente.EDAD_MINIMA` o `!getLicencia().estaVigente(LocalDate.now())`; el texto empieza con "Cliente registrado, pero todavía no va a poder alquilar".
-- Vista: `FormularioCliente` y `ModeloTablaClientes` en `vista`. En `VentanaPrincipal`: pestaña "Clientes", tabla `tablaClientes` y botón `agregarCliente`. Columnas: "Nº", "Nombre", "DNI", "Teléfono", "Categorías", "Vencimiento licencia".
-- `VentanaPrincipal` pasa a recibir los dos servicios: `VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes)`. `Main` crea ambos con la misma `Agencia`.
-- Los nombres nuevos (`setId()`, `FormularioCliente`, `ModeloTablaClientes`, `tablaClientes`, `agregarCliente` y el constructor nuevo de `VentanaPrincipal`) se agregan a `uml.md` al empezar la historia. Si hace falta otro nombre que no está en esta lista ni en `uml.md`, agregarlo primero a `uml.md`.
+- Servicio: `ServicioClientes.buscarPorTexto(texto: String): List<Cliente>`. Compara sin distinguir mayúsculas e ignora espacios al principio y al final del texto; `null` o vacío devuelve todos, en el orden en que se registraron.
+- Tabla: `ModeloTablaClientes` guarda la búsqueda en `filtroTexto: String` y la cambia con `setFiltro(texto: String): void`, que refresca la tabla. Siempre consulta a `buscarPorTexto()`.
+- Vista: en `VentanaPrincipal`, el campo se llama `campoBusqueda` y aplica la búsqueda con cada cambio del texto.
+- `filtroTexto`, `setFiltro()` de `ModeloTablaClientes` y `campoBusqueda` son nombres nuevos: agregarlos a `uml.md` al empezar la historia. Si hace falta otro nombre que no está en esta lista ni en `uml.md`, agregarlo primero a `uml.md`.
 
 ## Out of scope
-- Buscar clientes (#7) y eliminarlos (#8).
-- `habilitaPara()` y `puedeConducir()`: la validación del conductor llega con #10.
-- Editar un cliente ya registrado.
-- Validar el formato del DNI o del teléfono.
-- Guardar en archivo (#16).
+- Ignorar tildes en la búsqueda (por ejemplo, que "Gomez" encuentre "Gómez").
+- Buscar por teléfono o número de licencia.
+- Eliminar clientes (#8).
+- Ordenar la tabla por columnas.
 
 ## Suggestions (your call)
 - Ninguna.
