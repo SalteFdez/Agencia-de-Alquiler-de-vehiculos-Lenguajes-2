@@ -122,4 +122,17 @@ class ServicioClientesTest {
 
         assertEquals(List.of(menor), servicio.listarClientes());
     }
+
+    @Test
+    void unClienteConLaLicenciaVencidaSeRegistraIgual() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        LicenciaConducir vencida = new LicenciaConducir("L123456",
+                Set.of(CategoriaLicencia.B), LocalDate.now().minusDays(1));
+        Cliente cliente = new Cliente("Ana", "Gomez", "30123456",
+                LocalDate.of(1990, 5, 20), "3874123456", vencida);
+
+        servicio.registrarCliente(cliente);
+
+        assertEquals(List.of(cliente), servicio.listarClientes());
+    }
 }
