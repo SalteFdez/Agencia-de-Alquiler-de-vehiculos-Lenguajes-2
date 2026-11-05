@@ -1,5 +1,7 @@
 target/
 out/
 .claude/
-idea/
+.idea/
 .DS_Store
+CLAUDE.md
+plan.md
