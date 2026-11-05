@@ -23,6 +23,14 @@ public class Cliente {
         this.licencia = licencia;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getNombreCompleto() {
         return nombre + " " + apellido;
     }
