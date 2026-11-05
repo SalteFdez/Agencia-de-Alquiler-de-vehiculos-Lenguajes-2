@@ -232,4 +232,34 @@ class ServicioClientesTest {
 
         assertTrue(servicio.buscarPorTexto("zzz").isEmpty());
     }
+
+    @Test
+    void eliminarUnClienteLoSacaDeLaListaYLosDemasSiguenEnOrden() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente primero = cliente("Ana", "Gomez", "30123456");
+        Cliente segundo = cliente("Luis", "Perez", "27987654");
+        Cliente tercero = cliente("Eva", "Diaz", "25111222");
+        servicio.registrarCliente(primero);
+        servicio.registrarCliente(segundo);
+        servicio.registrarCliente(tercero);
+
+        servicio.eliminarCliente(segundo);
+
+        assertEquals(List.of(primero, tercero), servicio.listarClientes());
+    }
+
+    @Test
+    void unClienteRegistradoDespuesDeEliminarOtroNoReutilizaSuNumero() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente primero = cliente("Ana", "Gomez", "30123456");
+        Cliente segundo = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(primero);
+        servicio.registrarCliente(segundo);
+        servicio.eliminarCliente(segundo);
+
+        Cliente nuevo = cliente("Eva", "Diaz", "25111222");
+        servicio.registrarCliente(nuevo);
+
+        assertEquals(3, nuevo.getId());
+    }
 }

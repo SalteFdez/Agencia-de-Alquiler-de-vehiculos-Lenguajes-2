@@ -129,4 +129,43 @@ class ModeloTablaClientesTest {
         assertEquals(2, modelo.getRowCount());
         assertEquals("Lucía Díaz", modelo.getValueAt(1, 1));
     }
+
+    @Test
+    void getClienteEnDevuelveElClienteDeEsaFila() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        Cliente luis = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(ana);
+        servicio.registrarCliente(luis);
+        ModeloTablaClientes modelo = new ModeloTablaClientes(servicio);
+
+        assertEquals(luis, modelo.getClienteEn(1));
+    }
+
+    @Test
+    void conUnaBusquedaGetClienteEnDevuelveElClienteQueSeVeEnEsaFila() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        servicio.registrarCliente(cliente("Ana", "Gomez", "30123456"));
+        Cliente luis = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(luis);
+        ModeloTablaClientes modelo = new ModeloTablaClientes(servicio);
+        modelo.setFiltro("lu");
+
+        assertEquals(luis, modelo.getClienteEn(0));
+    }
+
+    @Test
+    void eliminarUnClienteConUnaBusquedaDejaLaTablaFiltradaSinElEliminado() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        servicio.registrarCliente(cliente("Ana", "Gomez", "30123456"));
+        servicio.registrarCliente(cliente("Luis", "Perez", "27987654"));
+        servicio.registrarCliente(cliente("Lucía", "Díaz", "25111222"));
+        ModeloTablaClientes modelo = new ModeloTablaClientes(servicio);
+        modelo.setFiltro("lu");
+
+        servicio.eliminarCliente(modelo.getClienteEn(0));
+
+        assertEquals(1, modelo.getRowCount());
+        assertEquals("Lucía Díaz", modelo.getValueAt(0, 1));
+    }
 }

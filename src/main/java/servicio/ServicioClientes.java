@@ -39,6 +39,10 @@ public class ServicioClientes {
         }
     }
 
+    public void eliminarCliente(Cliente c) throws AlquilerException {
+        agencia.getClientes().remove(c);
+    }
+
     public List<Cliente> buscarPorTexto(String texto) {
         if (texto == null || texto.isBlank()) {
             return listarClientes();

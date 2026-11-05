@@ -27,6 +27,10 @@ public class ModeloTablaClientes extends AbstractTableModel {
         fireTableDataChanged();
     }
 
+    public Cliente getClienteEn(int fila) {
+        return servicio.buscarPorTexto(filtroTexto).get(fila);
+    }
+
     @Override
     public int getRowCount() {
         return servicio.buscarPorTexto(filtroTexto).size();

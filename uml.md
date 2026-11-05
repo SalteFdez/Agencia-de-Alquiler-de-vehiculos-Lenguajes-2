@@ -31,7 +31,11 @@ classDiagram
             -campoBusqueda: JTextField
             -tablaClientes: JTable
             -agregarCliente: JButton
+            -eliminarClienteBoton: JButton
             +VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes)
+            -crearPestaniaFlota(servicio: ServicioFlota, modelo: ModeloTablaFlota) JPanel
+            -crearPestaniaClientes(servicio: ServicioClientes, modelo: ModeloTablaClientes) JPanel
+            -alCambiarElTexto(campo: JTextField, accion: Runnable) void
         }
         class FormularioAuto {
             -servicio: ServicioFlota
@@ -108,6 +112,7 @@ classDiagram
             -servicio: ServicioClientes
             -filtroTexto: String
             +setFiltro(texto: String) void
+            +getClienteEn(fila: int) Cliente
             +getRowCount() int
             +getColumnCount() int
             +getColumnName(columna: int) String
@@ -403,6 +408,7 @@ classDiagram
 - `FormularioCliente` lee las fechas con `fecha(etiqueta, campo)` (formato dd/mm/aaaa estricto: rechaza 31/02) y tiene una casilla por cada `CategoriaLicencia`. Después de registrar, si el cliente es menor de `EDAD_MINIMA` o su licencia no está vigente hoy, muestra un aviso que empieza con "Cliente registrado, pero todavía no va a poder alquilar". `agregar()` y `avisarSiNoPuedeAlquilar()` son métodos privados suyos.
 - `ModeloTablaClientes` muestra número, nombre completo, DNI, teléfono, categorías (ordenadas y separadas por coma) y vencimiento en dd/mm/aaaa. `VentanaPrincipal` tiene la pestaña "Clientes" con `tablaClientes` y `agregarCliente`, y recibe los dos servicios; `Main` los crea con la misma `Agencia`.
 - `ServicioClientes.buscarPorTexto(texto)` devuelve los clientes cuyo nombre, apellido, nombre completo o DNI contienen el texto, sin distinguir mayúsculas y sin contar los espacios del principio y del final; con texto `null`, vacío o en blanco devuelve todos, en orden de registro. No ignora tildes ("Gomez" no encuentra a "Gómez").
+- `VentanaPrincipal` arma cada pestaña en un método privado (`crearPestaniaFlota()`, `crearPestaniaClientes()`); `alCambiarElTexto()` registra un único listener que avisa ante cualquier cambio del texto de un campo.
 - `ModeloTablaClientes` guarda la búsqueda (`filtroTexto`) y la cambia con `setFiltro()`, que refresca la tabla. Siempre consulta a `buscarPorTexto()`, por eso un cliente nuevo aparece solo si coincide con la búsqueda. `VentanaPrincipal` tiene `campoBusqueda` arriba de la tabla de clientes y llama a `setFiltro()` con cada cambio de texto, sin botón.
 - Los getters de `Cliente`, `LicenciaConducir` y `Agencia.getClientes()` no se dibujan completos en el diagrama (ver la primera nota).
 - El formato de fecha dd/mm/aaaa está definido dos veces (`FORMATO_FECHA` en `FormularioCliente` y en `ModeloTablaClientes`): candidato a refactor.
