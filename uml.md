@@ -327,6 +327,8 @@ classDiagram
             +getKmRecorridos() int
             +calcularTotal() double
             +finalizar(fecha: LocalDate, kmFinal: int) void
+            +getFechaDevolucion() LocalDate
+            +getKmFinal() int
         }
         class EstadoContrato {
             <<enumeration>>

@@ -52,4 +52,14 @@ class AutoTest {
 
         assertEquals(CategoriaLicencia.B, auto.getLicenciaRequerida());
     }
+
+    @Test
+    void actualizarKilometrajeCambiaElKilometrajeDelVehiculo() {
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+
+        auto.actualizarKilometraje(15400);
+
+        assertEquals(15400, auto.getKilometraje());
+    }
 }

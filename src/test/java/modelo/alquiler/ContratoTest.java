@@ -61,4 +61,72 @@ class ContratoTest {
 
         assertEquals(46000.0, contrato.calcularTotal(), 0.001);
     }
+
+    @Test
+    void finalizarGuardaLaFechaDeDevolucionYElKmFinalYDejaElContratoFinalizado() {
+        Contrato contrato = new Contrato(cliente(), auto(TipoCaja.MANUAL), new TarifaDiaria(),
+                LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+
+        contrato.finalizar(LocalDate.of(2026, 11, 7), 15400);
+
+        assertEquals(EstadoContrato.FINALIZADO, contrato.getEstado());
+        assertEquals(LocalDate.of(2026, 11, 7), contrato.getFechaDevolucion());
+        assertEquals(15400, contrato.getKmFinal());
+    }
+
+    @Test
+    void losKmRecorridosSonCeroMientrasEstaActivoYElKmFinalMenosElInicialAlFinalizar() {
+        Contrato contrato = new Contrato(cliente(), auto(TipoCaja.MANUAL), new TarifaDiaria(),
+                LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+
+        assertEquals(0, contrato.getKmRecorridos());
+
+        contrato.finalizar(LocalDate.of(2026, 11, 7), 15400);
+
+        assertEquals(400, contrato.getKmRecorridos());
+    }
+
+    @Test
+    void unContratoDevueltoAntesDelFinPrevistoCobraLosDiasPrevistos() {
+        Contrato contrato = new Contrato(cliente(), auto(TipoCaja.MANUAL), new TarifaDiaria(),
+                LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+
+        contrato.finalizar(LocalDate.of(2026, 11, 7), 15400);
+
+        assertEquals(5, contrato.getDias());
+    }
+
+    @Test
+    void unContratoDevueltoElDiaDelFinPrevistoCobraLosDiasPrevistos() {
+        Contrato contrato = new Contrato(cliente(), auto(TipoCaja.MANUAL), new TarifaDiaria(),
+                LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+
+        contrato.finalizar(LocalDate.of(2026, 11, 10), 15400);
+
+        assertEquals(5, contrato.getDias());
+    }
+
+    @Test
+    void unContratoDevueltoDespuesDelFinPrevistoCobraLosDiasReales() {
+        Contrato contrato = new Contrato(cliente(), auto(TipoCaja.MANUAL), new TarifaDiaria(),
+                LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+
+        contrato.finalizar(LocalDate.of(2026, 11, 12), 15400);
+
+        assertEquals(7, contrato.getDias());
+    }
+
+    @Test
+    void elTotalDeUnContratoFinalizadoUsaLosDiasCobrados() {
+        Contrato antes = new Contrato(cliente(), auto(TipoCaja.MANUAL), new TarifaDiaria(),
+                LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+        Contrato despues = new Contrato(cliente(), auto(TipoCaja.MANUAL), new TarifaDiaria(),
+                LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+
+        antes.finalizar(LocalDate.of(2026, 11, 7), 15400);
+        despues.finalizar(LocalDate.of(2026, 11, 12), 15400);
+
+        assertEquals(50000.0, antes.calcularTotal(), 0.001);
+        assertEquals(70000.0, despues.calcularTotal(), 0.001);
+    }
 }

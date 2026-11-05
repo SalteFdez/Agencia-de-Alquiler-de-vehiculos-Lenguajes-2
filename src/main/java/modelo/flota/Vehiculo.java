@@ -10,7 +10,7 @@ public abstract class Vehiculo {
     private final String modelo;
     private final String color;
     private final int anio;
-    private final int kilometraje;
+    private int kilometraje;
     private final double precioBaseDiario;
     private EstadoVehiculo estado = EstadoVehiculo.DISPONIBLE;
 
@@ -31,6 +31,10 @@ public abstract class Vehiculo {
 
     public int getKilometraje() {
         return kilometraje;
+    }
+
+    public void actualizarKilometraje(int km) {
+        this.kilometraje = km;
     }
 
     public double getPrecioBaseDiario() {

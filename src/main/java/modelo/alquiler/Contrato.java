@@ -14,7 +14,9 @@ public class Contrato {
     private final Tarifa tarifa;
     private final LocalDate fechaInicio;
     private final LocalDate fechaFinPrevista;
+    private LocalDate fechaDevolucion;
     private final int kmInicial;
+    private int kmFinal;
     private EstadoContrato estado = EstadoContrato.ACTIVO;
 
     public Contrato(Cliente cliente, Vehiculo vehiculo, Tarifa tarifa,
@@ -60,7 +62,18 @@ public class Contrato {
     }
 
     public long getDias() {
-        return ChronoUnit.DAYS.between(fechaInicio, fechaFinPrevista);
+        long diasPrevistos = ChronoUnit.DAYS.between(fechaInicio, fechaFinPrevista);
+        if (estado == EstadoContrato.FINALIZADO) {
+            return Math.max(diasPrevistos, ChronoUnit.DAYS.between(fechaInicio, fechaDevolucion));
+        }
+        return diasPrevistos;
+    }
+
+    public int getKmRecorridos() {
+        if (estado == EstadoContrato.FINALIZADO) {
+            return kmFinal - kmInicial;
+        }
+        return 0;
     }
 
     public double calcularTotal() {
@@ -69,5 +82,19 @@ public class Contrato {
 
     public EstadoContrato getEstado() {
         return estado;
+    }
+
+    public void finalizar(LocalDate fecha, int kmFinal) {
+        this.fechaDevolucion = fecha;
+        this.kmFinal = kmFinal;
+        this.estado = EstadoContrato.FINALIZADO;
+    }
+
+    public LocalDate getFechaDevolucion() {
+        return fechaDevolucion;
+    }
+
+    public int getKmFinal() {
+        return kmFinal;
     }
 }
