@@ -53,6 +53,7 @@ classDiagram
             -guardar() void
         }
         class FormularioCliente {
+            -FORMATO_FECHA: DateTimeFormatter$
             -servicio: ServicioClientes
             -alRegistrar: Runnable
             +FormularioCliente(padre: Frame, servicio: ServicioClientes, alRegistrar: Runnable)
