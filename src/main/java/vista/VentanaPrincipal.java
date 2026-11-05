@@ -11,6 +11,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
 import servicio.ServicioClientes;
@@ -26,6 +29,7 @@ public class VentanaPrincipal extends JFrame {
             new JComboBox<>(new String[] {TODOS, "DISPONIBLE", "ALQUILADO"});
     private final JTable tablaFlota;
     private final JButton darDeBaja = new JButton("Dar de baja");
+    private final JTextField campoBusqueda = new JTextField(20);
     private final JTable tablaClientes;
     private final JButton agregarCliente = new JButton("Agregar cliente");
 
@@ -91,7 +95,28 @@ public class VentanaPrincipal extends JFrame {
         agregarCliente.addActionListener(e ->
                 new FormularioCliente(this, servicioClientes, modeloClientes::fireTableDataChanged)
                         .setVisible(true));
+        campoBusqueda.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                modeloClientes.setFiltro(campoBusqueda.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                modeloClientes.setFiltro(campoBusqueda.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                modeloClientes.setFiltro(campoBusqueda.getText());
+            }
+        });
+        JPanel busqueda = new JPanel();
+        busqueda.add(new JLabel("Buscar"));
+        busqueda.add(campoBusqueda);
+
         JPanel clientes = new JPanel(new BorderLayout());
+        clientes.add(busqueda, BorderLayout.NORTH);
         clientes.add(new JScrollPane(tablaClientes), BorderLayout.CENTER);
         JPanel botonesClientes = new JPanel();
         botonesClientes.add(agregarCliente);

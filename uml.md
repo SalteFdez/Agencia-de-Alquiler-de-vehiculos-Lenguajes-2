@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #6 terminada (registrar un cliente con su licencia).
+Última actualización: historia #7 terminada (buscar clientes por nombre o DNI).
 
 ## Diagrama
 
@@ -373,11 +373,11 @@ classDiagram
 | `Agencia` | `modelo` | Parcial | `contratos`, `ultimoNroContrato`, `siguienteNroContrato()` | #9 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes` | `vista` | Hecho para #6 | Crecen con cada historia | #1, #2, #3, #4, #5, #6 |
+| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes` | `vista` | Hecho para #7 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7 |
 | `CategoriaLicencia` | `modelo.clientes` | Hecho | — | #6 |
 | `LicenciaConducir` | `modelo.clientes` | Parcial | `habilitaPara()` | #10 |
 | `Cliente` | `modelo.clientes` | Parcial | `puedeConducir()` | #10 |
-| `ServicioClientes` | `servicio` | Parcial | `eliminarCliente()`, `buscarPorTexto()` | #7, #8 |
+| `ServicioClientes` | `servicio` | Parcial | `eliminarCliente()` | #8 |
 | `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #12, #15 |
 | `Tarifa`, `TarifaDiaria`, `TarifaSemanal`, `TarifaKilometraje` | `modelo.tarifas` | Pendiente | Todo | #9, #13, #14 |
 | `VehiculoNoDisponibleException`, `ConductorNoHabilitadoException` | `excepciones` | Pendiente | Todo | #9, #10 |
@@ -402,6 +402,8 @@ classDiagram
 - `Cliente.getEdad()` cuenta los años completos hasta hoy. `LicenciaConducir.estaVigente(fecha)` es verdadera hasta el día del vencimiento inclusive. `Cliente.EDAD_MINIMA` es 18 y la usa `FormularioCliente` para decidir el aviso; `Cliente.setId()` lo usa solo el servicio.
 - `FormularioCliente` lee las fechas con `fecha(etiqueta, campo)` (formato dd/mm/aaaa estricto: rechaza 31/02) y tiene una casilla por cada `CategoriaLicencia`. Después de registrar, si el cliente es menor de `EDAD_MINIMA` o su licencia no está vigente hoy, muestra un aviso que empieza con "Cliente registrado, pero todavía no va a poder alquilar". `agregar()` y `avisarSiNoPuedeAlquilar()` son métodos privados suyos.
 - `ModeloTablaClientes` muestra número, nombre completo, DNI, teléfono, categorías (ordenadas y separadas por coma) y vencimiento en dd/mm/aaaa. `VentanaPrincipal` tiene la pestaña "Clientes" con `tablaClientes` y `agregarCliente`, y recibe los dos servicios; `Main` los crea con la misma `Agencia`.
+- `ServicioClientes.buscarPorTexto(texto)` devuelve los clientes cuyo nombre, apellido, nombre completo o DNI contienen el texto, sin distinguir mayúsculas y sin contar los espacios del principio y del final; con texto `null`, vacío o en blanco devuelve todos, en orden de registro. No ignora tildes ("Gomez" no encuentra a "Gómez").
+- `ModeloTablaClientes` guarda la búsqueda (`filtroTexto`) y la cambia con `setFiltro()`, que refresca la tabla. Siempre consulta a `buscarPorTexto()`, por eso un cliente nuevo aparece solo si coincide con la búsqueda. `VentanaPrincipal` tiene `campoBusqueda` arriba de la tabla de clientes y llama a `setFiltro()` con cada cambio de texto, sin botón.
 - Los getters de `Cliente`, `LicenciaConducir` y `Agencia.getClientes()` no se dibujan completos en el diagrama (ver la primera nota).
 - El formato de fecha dd/mm/aaaa está definido dos veces (`FORMATO_FECHA` en `FormularioCliente` y en `ModeloTablaClientes`): candidato a refactor.
 - El punto de entrada (`Main`) está en el paquete `vista`.
