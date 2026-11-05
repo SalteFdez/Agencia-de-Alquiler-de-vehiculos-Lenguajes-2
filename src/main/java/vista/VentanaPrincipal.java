@@ -37,17 +37,30 @@ public class VentanaPrincipal extends JFrame {
         super("Agencia de alquiler de vehículos");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        ModeloTablaFlota modelo = new ModeloTablaFlota(servicioFlota);
-        tablaFlota = new JTable(modelo);
+        ModeloTablaFlota modeloFlota = new ModeloTablaFlota(servicioFlota);
+        tablaFlota = new JTable(modeloFlota);
+        ModeloTablaClientes modeloClientes = new ModeloTablaClientes(servicioClientes);
+        tablaClientes = new JTable(modeloClientes);
+
+        JTabbedPane pestanias = new JTabbedPane();
+        pestanias.addTab("Flota", crearPestaniaFlota(servicioFlota, modeloFlota));
+        pestanias.addTab("Clientes", crearPestaniaClientes(servicioClientes, modeloClientes));
+        add(pestanias);
+
+        setSize(900, 500);
+        setLocationRelativeTo(null);
+    }
+
+    private JPanel crearPestaniaFlota(ServicioFlota servicio, ModeloTablaFlota modelo) {
         JButton agregarAuto = new JButton("Agregar auto");
         agregarAuto.addActionListener(e ->
-                new FormularioAuto(this, servicioFlota, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioAuto(this, servicio, modelo::fireTableDataChanged).setVisible(true));
         JButton agregarMoto = new JButton("Agregar moto");
         agregarMoto.addActionListener(e ->
-                new FormularioMoto(this, servicioFlota, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioMoto(this, servicio, modelo::fireTableDataChanged).setVisible(true));
         JButton agregarCamioneta = new JButton("Agregar camioneta");
         agregarCamioneta.addActionListener(e ->
-                new FormularioCamioneta(this, servicioFlota, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioCamioneta(this, servicio, modelo::fireTableDataChanged).setVisible(true));
 
         Runnable aplicarFiltro = () -> modelo.setFiltro(
                 TODOS.equals(comboTipo.getSelectedItem()) ? null : (String) comboTipo.getSelectedItem(),
@@ -67,67 +80,66 @@ public class VentanaPrincipal extends JFrame {
                 return;
             }
             try {
-                servicioFlota.eliminarVehiculo(elegido);
+                servicio.eliminarVehiculo(elegido);
                 modelo.fireTableDataChanged();
             } catch (AlquilerException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(),
                         "No se pudo dar de baja el vehículo", JOptionPane.ERROR_MESSAGE);
             }
         });
+
         JPanel filtros = new JPanel();
         filtros.add(new JLabel("Tipo"));
         filtros.add(comboTipo);
         filtros.add(new JLabel("Estado"));
         filtros.add(comboEstado);
-
-        JPanel flota = new JPanel(new BorderLayout());
-        flota.add(filtros, BorderLayout.NORTH);
-        flota.add(new JScrollPane(tablaFlota), BorderLayout.CENTER);
         JPanel botones = new JPanel();
         botones.add(agregarAuto);
         botones.add(agregarMoto);
         botones.add(agregarCamioneta);
         botones.add(darDeBaja);
+
+        JPanel flota = new JPanel(new BorderLayout());
+        flota.add(filtros, BorderLayout.NORTH);
+        flota.add(new JScrollPane(tablaFlota), BorderLayout.CENTER);
         flota.add(botones, BorderLayout.SOUTH);
+        return flota;
+    }
 
-        ModeloTablaClientes modeloClientes = new ModeloTablaClientes(servicioClientes);
-        tablaClientes = new JTable(modeloClientes);
+    private JPanel crearPestaniaClientes(ServicioClientes servicio, ModeloTablaClientes modelo) {
         agregarCliente.addActionListener(e ->
-                new FormularioCliente(this, servicioClientes, modeloClientes::fireTableDataChanged)
-                        .setVisible(true));
-        campoBusqueda.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                modeloClientes.setFiltro(campoBusqueda.getText());
-            }
+                new FormularioCliente(this, servicio, modelo::fireTableDataChanged).setVisible(true));
+        alCambiarElTexto(campoBusqueda, () -> modelo.setFiltro(campoBusqueda.getText()));
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                modeloClientes.setFiltro(campoBusqueda.getText());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                modeloClientes.setFiltro(campoBusqueda.getText());
-            }
-        });
         JPanel busqueda = new JPanel();
         busqueda.add(new JLabel("Buscar"));
         busqueda.add(campoBusqueda);
+        JPanel botones = new JPanel();
+        botones.add(agregarCliente);
 
         JPanel clientes = new JPanel(new BorderLayout());
         clientes.add(busqueda, BorderLayout.NORTH);
         clientes.add(new JScrollPane(tablaClientes), BorderLayout.CENTER);
-        JPanel botonesClientes = new JPanel();
-        botonesClientes.add(agregarCliente);
-        clientes.add(botonesClientes, BorderLayout.SOUTH);
+        clientes.add(botones, BorderLayout.SOUTH);
+        return clientes;
+    }
 
-        JTabbedPane pestanias = new JTabbedPane();
-        pestanias.addTab("Flota", flota);
-        pestanias.addTab("Clientes", clientes);
-        add(pestanias);
+    private void alCambiarElTexto(JTextField campo, Runnable accion) {
+        campo.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                accion.run();
+            }
 
-        setSize(900, 500);
-        setLocationRelativeTo(null);
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                accion.run();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                accion.run();
+            }
+        });
     }
 }
