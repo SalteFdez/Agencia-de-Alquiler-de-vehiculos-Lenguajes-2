@@ -200,4 +200,36 @@ class ServicioClientesTest {
 
         assertEquals(List.of(gomez), servicio.buscarPorTexto("ana g"));
     }
+
+    @Test
+    void laBusquedaNoDistingueMayusculasDeMinusculas() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        Cliente luis = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(ana);
+        servicio.registrarCliente(luis);
+
+        assertEquals(List.of(ana), servicio.buscarPorTexto("ANA"));
+        assertEquals(List.of(luis), servicio.buscarPorTexto("pErEz"));
+    }
+
+    @Test
+    void laBusquedaIgnoraLosEspaciosAlPrincipioYAlFinalDelTexto() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        Cliente luis = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(ana);
+        servicio.registrarCliente(luis);
+
+        assertEquals(List.of(ana), servicio.buscarPorTexto("  ana "));
+    }
+
+    @Test
+    void siNingunClienteCoincideLaListaQuedaVacia() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        servicio.registrarCliente(cliente("Ana", "Gomez", "30123456"));
+        servicio.registrarCliente(cliente("Luis", "Perez", "27987654"));
+
+        assertTrue(servicio.buscarPorTexto("zzz").isEmpty());
+    }
 }

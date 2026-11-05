@@ -43,7 +43,7 @@ public class ServicioClientes {
         if (texto == null || texto.isBlank()) {
             return listarClientes();
         }
-        String buscado = texto.toLowerCase();
+        String buscado = texto.trim().toLowerCase();
         List<Cliente> encontrados = new ArrayList<>();
         for (Cliente c : agencia.getClientes()) {
             if (c.getNombre().toLowerCase().contains(buscado)
