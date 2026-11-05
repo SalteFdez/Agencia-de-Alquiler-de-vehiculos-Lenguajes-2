@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #11 terminada (registrar la devolución con fecha y km final).
+Última actualización: historia #15 terminada (filtrar los contratos por estado).
 
 ## Diagrama
 
@@ -449,12 +449,12 @@ classDiagram
 | `Agencia` | `modelo` | Hecho | — | #6, #9 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `PanelContratos`, `FormularioContrato`, `FormularioDevolucion`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #11 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11 |
+| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `PanelContratos`, `FormularioContrato`, `FormularioDevolucion`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #15 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11, #15 |
 | `CategoriaLicencia` | `modelo.clientes` | Hecho | — | #6 |
 | `LicenciaConducir` | `modelo.clientes` | Hecho | — | #6, #10 |
 | `Cliente` | `modelo.clientes` | Hecho | — | #6, #10 |
 | `ServicioClientes` | `servicio` | Hecho | — | #6, #7, #8 |
-| `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Parcial | Filtro por estado en la interfaz (el servicio ya lo ofrece con `listarContratos(estado)`) | #9, #10, #11, #15 |
+| `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Hecho | — | #9, #10, #11, #15 |
 | `Tarifa`, `TarifaDiaria` | `modelo.tarifas` | Hecho | — | #9 |
 | `VehiculoNoDisponibleException` | `excepciones` | Hecho | — | #9 |
 | `ConductorNoHabilitadoException` | `excepciones` | Hecho | — | #10 |
@@ -491,7 +491,7 @@ classDiagram
 - `Contrato` toma `kmInicial` de `vehiculo.getKilometraje()` y queda `ACTIVO`. `getDias()` son los días entre `fechaInicio` y `fechaFinPrevista`; `calcularTotal()` es `tarifa.calcular(vehiculo, getDias(), 0)`. `setNumero()` lo usa solo `ServicioAlquiler`. `Vehiculo.estaDisponible()` es verdadero con estado `DISPONIBLE`.
 - `ServicioAlquiler.crearContrato()` valida primero que `fin` sea posterior a hoy ("La fecha de fin prevista debe ser posterior a hoy") y después que el vehículo esté disponible (`VehiculoNoDisponibleException`: "El vehículo <patente> no está disponible"). Si todo está bien asigna el número con `Agencia.siguienteNroContrato()`, deja el vehículo `ALQUILADO`, guarda el contrato con fecha de inicio hoy y lo devuelve. Un contrato rechazado no consume número. `listarContratos(estado)` devuelve los contratos de ese estado, o todos con `null`, en orden de creación.
 - `Cliente.toString()` ("<nombre completo> (DNI <dni>)") y `Vehiculo.toString()` ("<patente> - <marca> <modelo>") existen para mostrar los elementos en las listas desplegables de `FormularioContrato`.
-- `ModeloTablaContratos` muestra número, nombre completo del cliente, patente, fechas en dd/mm/aaaa, nombre de la tarifa, estado y total; consulta a `ServicioAlquiler.listarContratos(null)` cada vez.
+- `ModeloTablaContratos` muestra número, nombre completo del cliente, patente, fechas en dd/mm/aaaa, nombre de la tarifa, estado y total; consulta a `ServicioAlquiler.listarContratos(filtroEstado)` cada vez.
 - `FormularioContrato` ofrece todos los clientes y solo los vehículos `DISPONIBLE`, sin nada elegido al abrir. `etiquetaTotal` muestra el total estimado (precio diario × días hasta `campoFechaFin`) y "-" si falta el vehículo o la fecha no es válida o no es posterior a hoy; se recalcula al cambiar el vehículo o la fecha. Al guardar valida en este orden: cliente ("Hay que elegir un cliente"), vehículo ("Hay que elegir un vehículo disponible"), formato de la fecha y las reglas de `crearContrato()`; los errores se muestran en un diálogo "No se pudo crear el contrato".
 - `PanelContratos` recibe un `Runnable alCrear` que `VentanaPrincipal` conecta con `PanelFlota.refrescar()`: al crear un contrato se refrescan la tabla de contratos y la de la flota, porque el vehículo pasó a `ALQUILADO`.
 - `Vehiculo.getLicenciaRequerida()` es abstracto: `Auto` y `Camioneta` piden la categoría B y `Moto` la A. `LicenciaConducir.habilitaPara(c, fecha)` es verdadero si la licencia está vigente en esa fecha (inclusive el día del vencimiento) y tiene la categoría `c`. `Cliente.puedeConducir(v, hasta)` es verdadero con `EDAD_MINIMA` años o más (la edad se cuenta a hoy) y una licencia que habilite la categoría del vehículo hasta `hasta`.
@@ -502,3 +502,5 @@ classDiagram
 - `ServicioAlquiler.registrarDevolucion(c, fecha, kmFinal)` valida en este orden: contrato ya finalizado ("El contrato <numero> ya está finalizado"), fecha anterior al inicio ("La fecha de devolución no puede ser anterior al inicio del contrato"), fecha posterior a hoy ("La fecha de devolución no puede ser posterior a hoy") y km final menor al inicial ("El km final no puede ser menor al km inicial (<kmInicial>)"). Si todo está bien finaliza el contrato, actualiza el km del vehículo y lo deja `DISPONIBLE`; si no, no cambia nada.
 - `ModeloTablaContratos.getContratoEn(fila)` devuelve el contrato de esa fila, que `PanelContratos` pasa a `FormularioDevolucion`. `devolucionBoton` ("Registrar devolución") está deshabilitado mientras no haya una fila elegida.
 - `FormularioDevolucion` abre con `campoFechaDevolucion` precargado con hoy (dd/mm/aaaa) y `campoKmFinal` vacío; `guardar()` lee la fecha con `FormularioCliente.fecha()` y el km con `PanelDatosVehiculo.entero()`. Si el servicio acepta, avisa con `alRegistrar` y muestra "Devolución registrada" con días cobrados, km recorridos y total con dos decimales; los errores se muestran en un diálogo "No se pudo registrar la devolución". En `PanelContratos` el mismo `Runnable` que usa `FormularioContrato` refresca la tabla de contratos y, con `alCrear`, la de la flota (el nombre `alCrear` ya no describe solo la creación: candidato a renombrar).
+- `ModeloTablaContratos` guarda el filtro (`filtroEstado`) y lo cambia con `setFiltro(estado)`, que refresca la tabla; `null` muestra todos los contratos. `getRowCount()`, `getValueAt()` y `getContratoEn()` consultan siempre `ServicioAlquiler.listarContratos(filtroEstado)`, así que la fila elegida corresponde a la lista filtrada y el filtro se conserva al crear un contrato o registrar una devolución (la tabla solo se refresca).
+- `PanelContratos` tiene la lista desplegable `comboEstado` ("Todos", "ACTIVO", "FINALIZADO") arriba de la tabla; "Todos" se traduce a `null` con la constante `TODOS` antes de llamar a `setFiltro()`, igual que en `PanelFlota`. Esa traducción está repetida en los dos paneles (candidato a refactor si aparece un tercer uso).
