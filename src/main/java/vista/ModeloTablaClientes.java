@@ -16,14 +16,20 @@ public class ModeloTablaClientes extends AbstractTableModel {
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ServicioClientes servicio;
+    private String filtroTexto;
 
     public ModeloTablaClientes(ServicioClientes servicio) {
         this.servicio = servicio;
     }
 
+    public void setFiltro(String texto) {
+        this.filtroTexto = texto;
+        fireTableDataChanged();
+    }
+
     @Override
     public int getRowCount() {
-        return servicio.listarClientes().size();
+        return servicio.buscarPorTexto(filtroTexto).size();
     }
 
     @Override
@@ -38,7 +44,7 @@ public class ModeloTablaClientes extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int fila, int columna) {
-        List<Cliente> clientes = servicio.listarClientes();
+        List<Cliente> clientes = servicio.buscarPorTexto(filtroTexto);
         Cliente c = clientes.get(fila);
         switch (columna) {
             case 0: return c.getId();
