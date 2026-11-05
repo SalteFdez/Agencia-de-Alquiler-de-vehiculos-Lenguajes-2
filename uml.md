@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #9 terminada (crear un contrato con tarifa diaria).
+Última actualización: historia #10 terminada (rechazar el contrato si el cliente no está habilitado).
 
 ## Diagrama
 
@@ -184,10 +184,12 @@ classDiagram
             +listarClientes() List~Cliente~
         }
         class ServicioAlquiler {
+            -FORMATO_FECHA: DateTimeFormatter$
             -agencia: Agencia
             +ServicioAlquiler(agencia: Agencia)
             +crearContrato(c: Cliente, v: Vehiculo, t: Tarifa, fin: LocalDate) Contrato
             +registrarDevolucion(c: Contrato, fecha: LocalDate, kmFinal: int) void
+            -motivoDeRechazo(c: Cliente, v: Vehiculo, fin: LocalDate) String
             +listarContratos(estado: EstadoContrato) List~Contrato~
         }
     }
@@ -352,7 +354,9 @@ classDiagram
         class VehiculoNoDisponibleException {
             +VehiculoNoDisponibleException(patente: String)
         }
-        class ConductorNoHabilitadoException
+        class ConductorNoHabilitadoException {
+            +ConductorNoHabilitadoException(motivo: String)
+        }
     }
 
     Vehiculo <|-- Auto
@@ -417,23 +421,23 @@ classDiagram
 
 | Clase | Paquete | Estado | Pendiente | Historia |
 | --- | --- | --- | --- | --- |
-| `Vehiculo` | `modelo.flota` | Parcial | `getLicenciaRequerida()`, `actualizarKilometraje()` | #10, #11 |
-| `Auto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
+| `Vehiculo` | `modelo.flota` | Parcial | `actualizarKilometraje()` | #11 |
+| `Auto` | `modelo.flota` | Hecho | — | #2, #10 |
 | `EstadoVehiculo`, `TipoCaja` | `modelo.flota` | Hecho | — | #1 |
-| `Moto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
-| `Camioneta` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
+| `Moto` | `modelo.flota` | Hecho | — | #2, #10 |
+| `Camioneta` | `modelo.flota` | Hecho | — | #3, #10 |
 | `Agencia` | `modelo` | Hecho | — | #6, #9 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `PanelContratos`, `FormularioContrato`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #9 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8, #9 |
+| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `PanelContratos`, `FormularioContrato`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #10 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8, #9, #10 |
 | `CategoriaLicencia` | `modelo.clientes` | Hecho | — | #6 |
-| `LicenciaConducir` | `modelo.clientes` | Parcial | `habilitaPara()` | #10 |
-| `Cliente` | `modelo.clientes` | Parcial | `puedeConducir()` | #10 |
+| `LicenciaConducir` | `modelo.clientes` | Hecho | — | #6, #10 |
+| `Cliente` | `modelo.clientes` | Hecho | — | #6, #10 |
 | `ServicioClientes` | `servicio` | Hecho | — | #6, #7, #8 |
 | `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Parcial | `fechaDevolucion`, `kmFinal`, `getKmRecorridos()`, `finalizar()`, `registrarDevolucion()` | #11, #15 |
 | `Tarifa`, `TarifaDiaria` | `modelo.tarifas` | Hecho | — | #9 |
 | `VehiculoNoDisponibleException` | `excepciones` | Hecho | — | #9 |
-| `ConductorNoHabilitadoException` | `excepciones` | Pendiente | Todo | #10 |
+| `ConductorNoHabilitadoException` | `excepciones` | Hecho | — | #10 |
 | `GestorPersistencia` | `persistencia` | Pendiente | Todo | #16 |
 
 ## Notas de diseño
@@ -462,7 +466,7 @@ classDiagram
 - `ServicioClientes.eliminarCliente(c)` quita al cliente de la base y declara `throws AlquilerException` y rechaza con "No se puede eliminar un cliente con un contrato activo" si hay un contrato `ACTIVO` de ese cliente en `agencia.getContratos()`. Si el cliente no está registrado no hace nada. Los números ya asignados no se reutilizan: el siguiente cliente sigue la numeración (`Agencia.siguienteIdCliente()`).
 - `ModeloTablaClientes.getClienteEn(fila)` devuelve el cliente de esa fila según la búsqueda (`filtroTexto`). `PanelClientes` tiene `eliminarClienteBoton`, habilitado solo con una fila elegida; `eliminarClienteElegido()` (privado) pide confirmación con nombre completo y DNI, llama al servicio y refresca la tabla conservando la búsqueda; si el servicio lanza una excepción la muestra en un diálogo "No se pudo eliminar el cliente".
 - Los getters de `Cliente`, `LicenciaConducir` y `Agencia.getClientes()` no se dibujan completos en el diagrama (ver la primera nota).
-- El formato de fecha dd/mm/aaaa está definido tres veces (`FORMATO_FECHA` en `FormularioCliente`, `ModeloTablaClientes` y `ModeloTablaContratos`): candidato a refactor. El listener de cambios de texto también está repetido (`PanelClientes.alCambiarElTexto()` y el de `campoFechaFin` en `FormularioContrato`).
+- El formato de fecha dd/mm/aaaa está definido cuatro veces (`FORMATO_FECHA` en `FormularioCliente`, `ModeloTablaClientes`, `ModeloTablaContratos` y `ServicioAlquiler`): candidato a refactor. El listener de cambios de texto también está repetido (`PanelClientes.alCambiarElTexto()` y el de `campoFechaFin` en `FormularioContrato`).
 - `Tarifa` es una interfaz (`calcular(v, dias, km)` y `getNombre()`); por ahora solo existe `TarifaDiaria`, que devuelve `v.getPrecioDiario() * dias` e ignora `km`.
 - `Contrato` toma `kmInicial` de `vehiculo.getKilometraje()` y queda `ACTIVO`. `getDias()` son los días entre `fechaInicio` y `fechaFinPrevista`; `calcularTotal()` es `tarifa.calcular(vehiculo, getDias(), 0)`. `setNumero()` lo usa solo `ServicioAlquiler`. `Vehiculo.estaDisponible()` es verdadero con estado `DISPONIBLE`.
 - `ServicioAlquiler.crearContrato()` valida primero que `fin` sea posterior a hoy ("La fecha de fin prevista debe ser posterior a hoy") y después que el vehículo esté disponible (`VehiculoNoDisponibleException`: "El vehículo <patente> no está disponible"). Si todo está bien asigna el número con `Agencia.siguienteNroContrato()`, deja el vehículo `ALQUILADO`, guarda el contrato con fecha de inicio hoy y lo devuelve. Un contrato rechazado no consume número. `listarContratos(estado)` devuelve los contratos de ese estado, o todos con `null`, en orden de creación.
@@ -470,4 +474,6 @@ classDiagram
 - `ModeloTablaContratos` muestra número, nombre completo del cliente, patente, fechas en dd/mm/aaaa, nombre de la tarifa, estado y total; consulta a `ServicioAlquiler.listarContratos(null)` cada vez.
 - `FormularioContrato` ofrece todos los clientes y solo los vehículos `DISPONIBLE`, sin nada elegido al abrir. `etiquetaTotal` muestra el total estimado (precio diario × días hasta `campoFechaFin`) y "-" si falta el vehículo o la fecha no es válida o no es posterior a hoy; se recalcula al cambiar el vehículo o la fecha. Al guardar valida en este orden: cliente ("Hay que elegir un cliente"), vehículo ("Hay que elegir un vehículo disponible"), formato de la fecha y las reglas de `crearContrato()`; los errores se muestran en un diálogo "No se pudo crear el contrato".
 - `PanelContratos` recibe un `Runnable alCrear` que `VentanaPrincipal` conecta con `PanelFlota.refrescar()`: al crear un contrato se refrescan la tabla de contratos y la de la flota, porque el vehículo pasó a `ALQUILADO`.
+- `Vehiculo.getLicenciaRequerida()` es abstracto: `Auto` y `Camioneta` piden la categoría B y `Moto` la A. `LicenciaConducir.habilitaPara(c, fecha)` es verdadero si la licencia está vigente en esa fecha (inclusive el día del vencimiento) y tiene la categoría `c`. `Cliente.puedeConducir(v, hasta)` es verdadero con `EDAD_MINIMA` años o más (la edad se cuenta a hoy) y una licencia que habilite la categoría del vehículo hasta `hasta`.
+- `ServicioAlquiler.crearContrato()` valida en este orden: fecha de fin, vehículo disponible y conductor. Si `!c.puedeConducir(v, fin)` lanza `ConductorNoHabilitadoException` ("El cliente no está habilitado para conducir este vehículo: <motivo>"); `motivoDeRechazo()` (privado) elige el primer motivo: "es menor de 18 años", "su licencia no tiene la categoría <A o B>" o "su licencia no está vigente hasta el <fin en dd/mm/aaaa>". `FormularioContrato` lo muestra como cualquier otro error, sin cambios. No hay equivalencias entre categorías: solo cuenta la exacta.
 - El punto de entrada (`Main`) está en el paquete `vista`; crea los tres servicios con la misma `Agencia`.
