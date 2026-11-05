@@ -72,6 +72,10 @@ public class PanelFlota extends JPanel {
         add(botones, BorderLayout.SOUTH);
     }
 
+    public void refrescar() {
+        modelo.fireTableDataChanged();
+    }
+
     private void darDeBajaElegido() {
         Vehiculo elegido = modelo.getVehiculoEn(tablaFlota.getSelectedRow());
         int respuesta = JOptionPane.showConfirmDialog(padre,

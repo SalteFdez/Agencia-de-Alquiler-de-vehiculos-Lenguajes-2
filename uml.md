@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #8 terminada (eliminar un cliente).
+Última actualización: historia #9 terminada (crear un contrato con tarifa diaria).
 
 ## Diagrama
 
@@ -24,7 +24,7 @@ classDiagram
             +main(args: String[])$ void
         }
         class VentanaPrincipal {
-            +VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes)
+            +VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes, servicioAlquiler: ServicioAlquiler)
         }
         class PanelFlota {
             -TODOS: String$
@@ -36,6 +36,7 @@ classDiagram
             -tablaFlota: JTable
             -darDeBaja: JButton
             +PanelFlota(padre: Frame, servicio: ServicioFlota)
+            +refrescar() void
             -darDeBajaElegido() void
         }
         class PanelClientes {
@@ -49,6 +50,29 @@ classDiagram
             +PanelClientes(padre: Frame, servicio: ServicioClientes)
             -alCambiarElTexto(campo: JTextField, accion: Runnable) void
             -eliminarClienteElegido() void
+        }
+        class PanelContratos {
+            -padre: Frame
+            -servicioAlquiler: ServicioAlquiler
+            -servicioClientes: ServicioClientes
+            -servicioFlota: ServicioFlota
+            -alCrear: Runnable
+            -modelo: ModeloTablaContratos
+            -tablaContratos: JTable
+            -nuevoContrato: JButton
+            +PanelContratos(padre: Frame, servicioAlquiler: ServicioAlquiler, servicioClientes: ServicioClientes, servicioFlota: ServicioFlota, alCrear: Runnable)
+        }
+        class FormularioContrato {
+            -SIN_TOTAL: String$
+            -servicioAlquiler: ServicioAlquiler
+            -alCrear: Runnable
+            -comboCliente: JComboBox~Cliente~
+            -comboVehiculo: JComboBox~Vehiculo~
+            -campoFechaFin: JTextField
+            -etiquetaTotal: JLabel
+            +FormularioContrato(padre: Frame, servicioAlquiler: ServicioAlquiler, servicioClientes: ServicioClientes, servicioFlota: ServicioFlota, alCrear: Runnable)
+            -guardar() void
+            -actualizarTotal() void
         }
         class FormularioAuto {
             -servicio: ServicioFlota
@@ -363,6 +387,12 @@ classDiagram
     Main ..> VentanaPrincipal : crea
     VentanaPrincipal --> PanelFlota
     VentanaPrincipal --> PanelClientes
+    VentanaPrincipal --> PanelContratos
+    PanelContratos ..> FormularioContrato : abre
+    PanelContratos --> ModeloTablaContratos
+    FormularioContrato --> ServicioAlquiler
+    FormularioContrato --> ServicioClientes
+    FormularioContrato --> ServicioFlota
     PanelFlota ..> FormularioAuto : abre
     PanelFlota ..> FormularioMoto : abre
     PanelFlota ..> FormularioCamioneta : abre
@@ -387,22 +417,23 @@ classDiagram
 
 | Clase | Paquete | Estado | Pendiente | Historia |
 | --- | --- | --- | --- | --- |
-| `Vehiculo` | `modelo.flota` | Parcial | `getLicenciaRequerida()`, `estaDisponible()`, `actualizarKilometraje()` | #9, #10, #11 |
+| `Vehiculo` | `modelo.flota` | Parcial | `getLicenciaRequerida()`, `actualizarKilometraje()` | #10, #11 |
 | `Auto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `EstadoVehiculo`, `TipoCaja` | `modelo.flota` | Hecho | — | #1 |
 | `Moto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `Camioneta` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
-| `Agencia` | `modelo` | Parcial | `contratos`, `ultimoNroContrato`, `siguienteNroContrato()` | #9 |
+| `Agencia` | `modelo` | Hecho | — | #6, #9 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #8 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8 |
+| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `PanelContratos`, `FormularioContrato`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #9 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8, #9 |
 | `CategoriaLicencia` | `modelo.clientes` | Hecho | — | #6 |
 | `LicenciaConducir` | `modelo.clientes` | Parcial | `habilitaPara()` | #10 |
 | `Cliente` | `modelo.clientes` | Parcial | `puedeConducir()` | #10 |
 | `ServicioClientes` | `servicio` | Hecho | — | #6, #7, #8 |
-| `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #15 |
-| `Tarifa`, `TarifaDiaria` | `modelo.tarifas` | Pendiente | Todo | #9 |
-| `VehiculoNoDisponibleException`, `ConductorNoHabilitadoException` | `excepciones` | Pendiente | Todo | #9, #10 |
+| `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Parcial | `fechaDevolucion`, `kmFinal`, `getKmRecorridos()`, `finalizar()`, `registrarDevolucion()` | #11, #15 |
+| `Tarifa`, `TarifaDiaria` | `modelo.tarifas` | Hecho | — | #9 |
+| `VehiculoNoDisponibleException` | `excepciones` | Hecho | — | #9 |
+| `ConductorNoHabilitadoException` | `excepciones` | Pendiente | Todo | #10 |
 | `GestorPersistencia` | `persistencia` | Pendiente | Todo | #16 |
 
 ## Notas de diseño
@@ -426,10 +457,17 @@ classDiagram
 - `FormularioCliente` lee las fechas con `fecha(etiqueta, campo)` (formato dd/mm/aaaa estricto: rechaza 31/02) y tiene una casilla por cada `CategoriaLicencia`. Después de registrar, si el cliente es menor de `EDAD_MINIMA` o su licencia no está vigente hoy, muestra un aviso que empieza con "Cliente registrado, pero todavía no va a poder alquilar". `agregar()` y `avisarSiNoPuedeAlquilar()` son métodos privados suyos.
 - `ModeloTablaClientes` muestra número, nombre completo, DNI, teléfono, categorías (ordenadas y separadas por coma) y vencimiento en dd/mm/aaaa. `VentanaPrincipal` arma la pestaña "Clientes" con `PanelClientes` (que tiene `tablaClientes` y `agregarCliente`) y recibe los dos servicios; `Main` los crea con la misma `Agencia`.
 - `ServicioClientes.buscarPorTexto(texto)` devuelve los clientes cuyo nombre, apellido, nombre completo o DNI contienen el texto, sin distinguir mayúsculas y sin contar los espacios del principio y del final; con texto `null`, vacío o en blanco devuelve todos, en orden de registro. No ignora tildes ("Gomez" no encuentra a "Gómez").
-- `VentanaPrincipal` solo arma las pestañas con `PanelFlota` y `PanelClientes`; cada panel tiene su tabla, sus botones y su servicio, y recibe la ventana (`padre`) para abrir sus diálogos. `PanelClientes.alCambiarElTexto()` registra un único listener que avisa ante cualquier cambio del texto de un campo, y `PanelFlota.darDeBajaElegido()` tiene la baja de un vehículo.
+- `VentanaPrincipal` solo arma las pestañas con `PanelFlota`, `PanelClientes` y `PanelContratos`; cada panel tiene su tabla, sus botones y su servicio, y recibe la ventana (`padre`) para abrir sus diálogos. `PanelClientes.alCambiarElTexto()` registra un único listener que avisa ante cualquier cambio del texto de un campo, y `PanelFlota.darDeBajaElegido()` tiene la baja de un vehículo.
 - `ModeloTablaClientes` guarda la búsqueda (`filtroTexto`) y la cambia con `setFiltro()`, que refresca la tabla. Siempre consulta a `buscarPorTexto()`, por eso un cliente nuevo aparece solo si coincide con la búsqueda. `PanelClientes` tiene `campoBusqueda` arriba de la tabla de clientes y llama a `setFiltro()` con cada cambio de texto, sin botón.
-- `ServicioClientes.eliminarCliente(c)` quita al cliente de la base y declara `throws AlquilerException` para que #9 pueda rechazar a un cliente con un contrato activo sin cambiar su firma; hoy no lanza nada. Si el cliente no está registrado no hace nada. Los números ya asignados no se reutilizan: el siguiente cliente sigue la numeración (`Agencia.siguienteIdCliente()`).
+- `ServicioClientes.eliminarCliente(c)` quita al cliente de la base y declara `throws AlquilerException` y rechaza con "No se puede eliminar un cliente con un contrato activo" si hay un contrato `ACTIVO` de ese cliente en `agencia.getContratos()`. Si el cliente no está registrado no hace nada. Los números ya asignados no se reutilizan: el siguiente cliente sigue la numeración (`Agencia.siguienteIdCliente()`).
 - `ModeloTablaClientes.getClienteEn(fila)` devuelve el cliente de esa fila según la búsqueda (`filtroTexto`). `PanelClientes` tiene `eliminarClienteBoton`, habilitado solo con una fila elegida; `eliminarClienteElegido()` (privado) pide confirmación con nombre completo y DNI, llama al servicio y refresca la tabla conservando la búsqueda; si el servicio lanza una excepción la muestra en un diálogo "No se pudo eliminar el cliente".
 - Los getters de `Cliente`, `LicenciaConducir` y `Agencia.getClientes()` no se dibujan completos en el diagrama (ver la primera nota).
-- El formato de fecha dd/mm/aaaa está definido dos veces (`FORMATO_FECHA` en `FormularioCliente` y en `ModeloTablaClientes`): candidato a refactor.
-- El punto de entrada (`Main`) está en el paquete `vista`.
+- El formato de fecha dd/mm/aaaa está definido tres veces (`FORMATO_FECHA` en `FormularioCliente`, `ModeloTablaClientes` y `ModeloTablaContratos`): candidato a refactor. El listener de cambios de texto también está repetido (`PanelClientes.alCambiarElTexto()` y el de `campoFechaFin` en `FormularioContrato`).
+- `Tarifa` es una interfaz (`calcular(v, dias, km)` y `getNombre()`); por ahora solo existe `TarifaDiaria`, que devuelve `v.getPrecioDiario() * dias` e ignora `km`.
+- `Contrato` toma `kmInicial` de `vehiculo.getKilometraje()` y queda `ACTIVO`. `getDias()` son los días entre `fechaInicio` y `fechaFinPrevista`; `calcularTotal()` es `tarifa.calcular(vehiculo, getDias(), 0)`. `setNumero()` lo usa solo `ServicioAlquiler`. `Vehiculo.estaDisponible()` es verdadero con estado `DISPONIBLE`.
+- `ServicioAlquiler.crearContrato()` valida primero que `fin` sea posterior a hoy ("La fecha de fin prevista debe ser posterior a hoy") y después que el vehículo esté disponible (`VehiculoNoDisponibleException`: "El vehículo <patente> no está disponible"). Si todo está bien asigna el número con `Agencia.siguienteNroContrato()`, deja el vehículo `ALQUILADO`, guarda el contrato con fecha de inicio hoy y lo devuelve. Un contrato rechazado no consume número. `listarContratos(estado)` devuelve los contratos de ese estado, o todos con `null`, en orden de creación.
+- `Cliente.toString()` ("<nombre completo> (DNI <dni>)") y `Vehiculo.toString()` ("<patente> - <marca> <modelo>") existen para mostrar los elementos en las listas desplegables de `FormularioContrato`.
+- `ModeloTablaContratos` muestra número, nombre completo del cliente, patente, fechas en dd/mm/aaaa, nombre de la tarifa, estado y total; consulta a `ServicioAlquiler.listarContratos(null)` cada vez.
+- `FormularioContrato` ofrece todos los clientes y solo los vehículos `DISPONIBLE`, sin nada elegido al abrir. `etiquetaTotal` muestra el total estimado (precio diario × días hasta `campoFechaFin`) y "-" si falta el vehículo o la fecha no es válida o no es posterior a hoy; se recalcula al cambiar el vehículo o la fecha. Al guardar valida en este orden: cliente ("Hay que elegir un cliente"), vehículo ("Hay que elegir un vehículo disponible"), formato de la fecha y las reglas de `crearContrato()`; los errores se muestran en un diálogo "No se pudo crear el contrato".
+- `PanelContratos` recibe un `Runnable alCrear` que `VentanaPrincipal` conecta con `PanelFlota.refrescar()`: al crear un contrato se refrescan la tabla de contratos y la de la flota, porque el vehículo pasó a `ALQUILADO`.
+- El punto de entrada (`Main`) está en el paquete `vista`; crea los tres servicios con la misma `Agencia`.
