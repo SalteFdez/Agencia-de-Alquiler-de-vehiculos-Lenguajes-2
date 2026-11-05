@@ -50,4 +50,8 @@ public class ModeloTablaContratos extends AbstractTableModel {
             default: return c.calcularTotal();
         }
     }
+
+    public Contrato getContratoEn(int fila) {
+        return servicio.listarContratos(null).get(fila);
+    }
 }

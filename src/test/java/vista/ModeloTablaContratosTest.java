@@ -1,6 +1,7 @@
 package vista;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -50,5 +51,41 @@ class ModeloTablaContratosTest {
         assertEquals("Diaria", modelo.getValueAt(0, 5));
         assertEquals("ACTIVO", modelo.getValueAt(0, 6));
         assertEquals(30000.0, (Double) modelo.getValueAt(0, 7), 0.001);
+    }
+
+    private static Contrato contrato(int numero, String patente, LocalDate inicio, LocalDate fin) {
+        Cliente cliente = new Cliente("Ana", "Gomez", "30123456", LocalDate.of(1990, 5, 20),
+                "3874123456", new LicenciaConducir("L123456", Set.of(CategoriaLicencia.B),
+                        LocalDate.of(2035, 1, 1)));
+        Auto auto = new Auto(patente, "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Contrato contrato = new Contrato(cliente, auto, new TarifaDiaria(), inicio, fin);
+        contrato.setNumero(numero);
+        return contrato;
+    }
+
+    @Test
+    void getContratoEnDevuelveElContratoDeEsaFila() {
+        Agencia agencia = new Agencia();
+        Contrato primero = contrato(1, "AB123CD", LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 8));
+        Contrato segundo = contrato(2, "XY987ZW", LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 9));
+        agencia.getContratos().add(primero);
+        agencia.getContratos().add(segundo);
+        ModeloTablaContratos modelo = new ModeloTablaContratos(new ServicioAlquiler(agencia));
+
+        assertSame(primero, modelo.getContratoEn(0));
+        assertSame(segundo, modelo.getContratoEn(1));
+    }
+
+    @Test
+    void laFilaDeUnContratoFinalizadoMuestraEstadoFinalizadoYElTotalConLosDiasCobrados() {
+        Agencia agencia = new Agencia();
+        Contrato contrato = contrato(1, "AB123CD", LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 10));
+        contrato.finalizar(LocalDate.of(2026, 11, 12), 15400);
+        agencia.getContratos().add(contrato);
+        ModeloTablaContratos modelo = new ModeloTablaContratos(new ServicioAlquiler(agencia));
+
+        assertEquals("FINALIZADO", modelo.getValueAt(0, 6));
+        assertEquals(70000.0, (Double) modelo.getValueAt(0, 7), 0.001);
     }
 }

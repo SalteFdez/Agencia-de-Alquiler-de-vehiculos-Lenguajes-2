@@ -20,6 +20,7 @@ public class PanelContratos extends JPanel {
     private final ModeloTablaContratos modelo;
     private final JTable tablaContratos;
     private final JButton nuevoContrato = new JButton("Nuevo contrato");
+    private final JButton devolucionBoton = new JButton("Registrar devolución");
 
     public PanelContratos(Frame padre, ServicioAlquiler servicioAlquiler,
                           ServicioClientes servicioClientes, ServicioFlota servicioFlota,
@@ -33,15 +34,26 @@ public class PanelContratos extends JPanel {
         this.modelo = new ModeloTablaContratos(servicioAlquiler);
         tablaContratos = new JTable(modelo);
 
+        Runnable alCambiarContratos = () -> {
+            modelo.fireTableDataChanged();
+            alCrear.run();
+        };
+
         nuevoContrato.addActionListener(e ->
                 new FormularioContrato(padre, servicioAlquiler, servicioClientes, servicioFlota,
-                        () -> {
-                            modelo.fireTableDataChanged();
-                            alCrear.run();
-                        }).setVisible(true));
+                        alCambiarContratos).setVisible(true));
+
+        devolucionBoton.setEnabled(false);
+        tablaContratos.getSelectionModel().addListSelectionListener(e ->
+                devolucionBoton.setEnabled(tablaContratos.getSelectedRow() >= 0));
+        devolucionBoton.addActionListener(e ->
+                new FormularioDevolucion(padre, servicioAlquiler,
+                        modelo.getContratoEn(tablaContratos.getSelectedRow()),
+                        alCambiarContratos).setVisible(true));
 
         JPanel botones = new JPanel();
         botones.add(nuevoContrato);
+        botones.add(devolucionBoton);
 
         add(new JScrollPane(tablaContratos), BorderLayout.CENTER);
         add(botones, BorderLayout.SOUTH);
