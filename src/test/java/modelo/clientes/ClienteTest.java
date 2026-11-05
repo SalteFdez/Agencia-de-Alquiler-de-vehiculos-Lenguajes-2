@@ -20,4 +20,12 @@ class ClienteTest {
 
         assertEquals("Ana Gomez", cliente.getNombreCompleto());
     }
+
+    @Test
+    void unClienteQueCumpleTreintaAniosHoyTieneTreinta() {
+        Cliente cliente = new Cliente("Ana", "Gomez", "30123456",
+                LocalDate.now().minusYears(30), "3874123456", licencia());
+
+        assertEquals(30, cliente.getEdad());
+    }
 }

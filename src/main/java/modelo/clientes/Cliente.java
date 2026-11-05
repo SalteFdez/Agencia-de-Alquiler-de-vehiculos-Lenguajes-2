@@ -1,6 +1,7 @@
 package modelo.clientes;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 public class Cliente {
 
@@ -24,5 +25,9 @@ public class Cliente {
 
     public String getNombreCompleto() {
         return nombre + " " + apellido;
+    }
+
+    public int getEdad() {
+        return Period.between(fechaNacimiento, LocalDate.now()).getYears();
     }
 }
