@@ -131,6 +131,16 @@ classDiagram
             +getColumnName(columna: int) String
             +getValueAt(fila: int, columna: int) Object
         }
+        class ModeloTablaContratos {
+            -COLUMNAS: String[]$
+            -FORMATO_FECHA: DateTimeFormatter$
+            -servicio: ServicioAlquiler
+            +ModeloTablaContratos(servicio: ServicioAlquiler)
+            +getRowCount() int
+            +getColumnCount() int
+            +getColumnName(columna: int) String
+            +getValueAt(fila: int, columna: int) Object
+        }
     }
 
     namespace servicio {
@@ -199,6 +209,7 @@ classDiagram
             +validarDatosPropios() void
             +getLicenciaRequerida()* CategoriaLicencia
             +estaDisponible() boolean
+            +toString() String
             +cambiarEstado(e: EstadoVehiculo) void
             +actualizarKilometraje(km: int) void
         }
@@ -252,6 +263,7 @@ classDiagram
             +setId(id: int) void
             +getNombreCompleto() String
             +getEdad() int
+            +toString() String
             +puedeConducir(v: Vehiculo, hasta: LocalDate) boolean
         }
         class LicenciaConducir {
@@ -368,6 +380,7 @@ classDiagram
     FormularioCamioneta *-- PanelDatosVehiculo
     ModeloTablaFlota --> ServicioFlota
     ModeloTablaClientes --> ServicioClientes
+    ModeloTablaContratos --> ServicioAlquiler
 ```
 
 ## Estado de implementación
@@ -382,7 +395,7 @@ classDiagram
 | `Agencia` | `modelo` | Parcial | `contratos`, `ultimoNroContrato`, `siguienteNroContrato()` | #9 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes` | `vista` | Hecho para #8 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8 |
+| `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #8 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8 |
 | `CategoriaLicencia` | `modelo.clientes` | Hecho | — | #6 |
 | `LicenciaConducir` | `modelo.clientes` | Parcial | `habilitaPara()` | #10 |
 | `Cliente` | `modelo.clientes` | Parcial | `puedeConducir()` | #10 |

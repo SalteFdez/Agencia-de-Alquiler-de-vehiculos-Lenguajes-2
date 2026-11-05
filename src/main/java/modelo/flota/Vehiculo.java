@@ -57,6 +57,11 @@ public abstract class Vehiculo {
         return estado;
     }
 
+    @Override
+    public String toString() {
+        return patente + " - " + marca + " " + modelo;
+    }
+
     public boolean estaDisponible() {
         return estado == EstadoVehiculo.DISPONIBLE;
     }

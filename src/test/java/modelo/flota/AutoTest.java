@@ -35,4 +35,12 @@ class AutoTest {
 
         assertFalse(auto.estaDisponible());
     }
+
+    @Test
+    void toStringMuestraLaPatenteLaMarcaYElModelo() {
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+
+        assertEquals("AB123CD - Fiat Cronos", auto.toString());
+    }
 }

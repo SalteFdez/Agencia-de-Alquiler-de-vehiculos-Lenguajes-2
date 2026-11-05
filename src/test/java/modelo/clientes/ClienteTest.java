@@ -36,4 +36,12 @@ class ClienteTest {
 
         assertEquals(17, cliente.getEdad());
     }
+
+    @Test
+    void toStringMuestraElNombreCompletoYElDni() {
+        Cliente cliente = new Cliente("Ana", "Gomez", "30123456",
+                LocalDate.of(1990, 5, 20), "3874123456", licencia());
+
+        assertEquals("Ana Gomez (DNI 30123456)", cliente.toString());
+    }
 }

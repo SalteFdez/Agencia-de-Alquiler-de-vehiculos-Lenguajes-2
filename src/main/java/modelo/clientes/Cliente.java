@@ -57,6 +57,11 @@ public class Cliente {
         return nombre + " " + apellido;
     }
 
+    @Override
+    public String toString() {
+        return getNombreCompleto() + " (DNI " + dni + ")";
+    }
+
     public int getEdad() {
         return Period.between(fechaNacimiento, LocalDate.now()).getYears();
     }
