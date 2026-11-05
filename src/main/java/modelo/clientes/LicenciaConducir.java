@@ -20,6 +20,10 @@ public class LicenciaConducir {
         return numero;
     }
 
+    public Set<CategoriaLicencia> getCategorias() {
+        return categorias;
+    }
+
     public boolean estaVigente(LocalDate fecha) {
         return !fecha.isAfter(fechaVencimiento);
     }

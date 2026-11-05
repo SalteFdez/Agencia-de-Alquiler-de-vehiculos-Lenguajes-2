@@ -20,6 +20,9 @@ public class ServicioClientes {
         exigir(c.getDni(), "DNI");
         exigir(c.getTelefono(), "Teléfono");
         exigir(c.getLicencia().getNumero(), "Número de licencia");
+        if (c.getLicencia().getCategorias().isEmpty()) {
+            throw new AlquilerException("La licencia debe tener al menos una categoría");
+        }
         c.setId(agencia.siguienteIdCliente());
         agencia.getClientes().add(c);
     }

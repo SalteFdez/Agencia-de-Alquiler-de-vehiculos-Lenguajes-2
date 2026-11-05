@@ -78,4 +78,19 @@ class ServicioClientesTest {
         assertEquals("El campo " + campo + " es obligatorio", e.getMessage());
         assertTrue(servicio.listarClientes().isEmpty());
     }
+
+    @Test
+    void unClienteSinCategoriasLanzaExcepcionYNoSeRegistra() {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        LicenciaConducir sinCategorias = new LicenciaConducir("L123456",
+                Set.of(), LocalDate.now().plusYears(3));
+        Cliente cliente = new Cliente("Ana", "Gomez", "30123456",
+                LocalDate.of(1990, 5, 20), "3874123456", sinCategorias);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarCliente(cliente));
+
+        assertEquals("La licencia debe tener al menos una categoría", e.getMessage());
+        assertTrue(servicio.listarClientes().isEmpty());
+    }
 }
