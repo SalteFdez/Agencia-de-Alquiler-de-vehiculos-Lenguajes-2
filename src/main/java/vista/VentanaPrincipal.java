@@ -14,6 +14,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import modelo.clientes.Cliente;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
 import servicio.ServicioClientes;
@@ -32,6 +33,7 @@ public class VentanaPrincipal extends JFrame {
     private final JTextField campoBusqueda = new JTextField(20);
     private final JTable tablaClientes;
     private final JButton agregarCliente = new JButton("Agregar cliente");
+    private final JButton eliminarClienteBoton = new JButton("Eliminar cliente");
 
     public VentanaPrincipal(ServicioFlota servicioFlota, ServicioClientes servicioClientes) {
         super("Agencia de alquiler de vehículos");
@@ -110,18 +112,40 @@ public class VentanaPrincipal extends JFrame {
         agregarCliente.addActionListener(e ->
                 new FormularioCliente(this, servicio, modelo::fireTableDataChanged).setVisible(true));
         alCambiarElTexto(campoBusqueda, () -> modelo.setFiltro(campoBusqueda.getText()));
+        eliminarClienteBoton.setEnabled(false);
+        tablaClientes.getSelectionModel().addListSelectionListener(e ->
+                eliminarClienteBoton.setEnabled(tablaClientes.getSelectedRow() >= 0));
+        eliminarClienteBoton.addActionListener(e -> eliminarClienteElegido(servicio, modelo));
 
         JPanel busqueda = new JPanel();
         busqueda.add(new JLabel("Buscar"));
         busqueda.add(campoBusqueda);
         JPanel botones = new JPanel();
         botones.add(agregarCliente);
+        botones.add(eliminarClienteBoton);
 
         JPanel clientes = new JPanel(new BorderLayout());
         clientes.add(busqueda, BorderLayout.NORTH);
         clientes.add(new JScrollPane(tablaClientes), BorderLayout.CENTER);
         clientes.add(botones, BorderLayout.SOUTH);
         return clientes;
+    }
+
+    private void eliminarClienteElegido(ServicioClientes servicio, ModeloTablaClientes modelo) {
+        Cliente elegido = modelo.getClienteEn(tablaClientes.getSelectedRow());
+        int respuesta = JOptionPane.showConfirmDialog(this,
+                "¿Eliminar al cliente " + elegido.getNombreCompleto() + " (DNI " + elegido.getDni() + ")?",
+                "Eliminar cliente", JOptionPane.YES_NO_OPTION);
+        if (respuesta != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            servicio.eliminarCliente(elegido);
+            modelo.fireTableDataChanged();
+        } catch (AlquilerException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "No se pudo eliminar el cliente", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void alCambiarElTexto(JTextField campo, Runnable accion) {

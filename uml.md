@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #7 terminada (buscar clientes por nombre o DNI).
+Última actualización: historia #8 terminada (eliminar un cliente).
 
 ## Diagrama
 
@@ -36,6 +36,7 @@ classDiagram
             -crearPestaniaFlota(servicio: ServicioFlota, modelo: ModeloTablaFlota) JPanel
             -crearPestaniaClientes(servicio: ServicioClientes, modelo: ModeloTablaClientes) JPanel
             -alCambiarElTexto(campo: JTextField, accion: Runnable) void
+            -eliminarClienteElegido(servicio: ServicioClientes, modelo: ModeloTablaClientes) void
         }
         class FormularioAuto {
             -servicio: ServicioFlota
@@ -378,11 +379,11 @@ classDiagram
 | `Agencia` | `modelo` | Parcial | `contratos`, `ultimoNroContrato`, `siguienteNroContrato()` | #9 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes` | `vista` | Hecho para #7 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7 |
+| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes` | `vista` | Hecho para #8 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8 |
 | `CategoriaLicencia` | `modelo.clientes` | Hecho | — | #6 |
 | `LicenciaConducir` | `modelo.clientes` | Parcial | `habilitaPara()` | #10 |
 | `Cliente` | `modelo.clientes` | Parcial | `puedeConducir()` | #10 |
-| `ServicioClientes` | `servicio` | Parcial | `eliminarCliente()` | #8 |
+| `ServicioClientes` | `servicio` | Hecho | — | #6, #7, #8 |
 | `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #12, #15 |
 | `Tarifa`, `TarifaDiaria`, `TarifaSemanal`, `TarifaKilometraje` | `modelo.tarifas` | Pendiente | Todo | #9, #13, #14 |
 | `VehiculoNoDisponibleException`, `ConductorNoHabilitadoException` | `excepciones` | Pendiente | Todo | #9, #10 |
@@ -410,6 +411,8 @@ classDiagram
 - `ServicioClientes.buscarPorTexto(texto)` devuelve los clientes cuyo nombre, apellido, nombre completo o DNI contienen el texto, sin distinguir mayúsculas y sin contar los espacios del principio y del final; con texto `null`, vacío o en blanco devuelve todos, en orden de registro. No ignora tildes ("Gomez" no encuentra a "Gómez").
 - `VentanaPrincipal` arma cada pestaña en un método privado (`crearPestaniaFlota()`, `crearPestaniaClientes()`); `alCambiarElTexto()` registra un único listener que avisa ante cualquier cambio del texto de un campo.
 - `ModeloTablaClientes` guarda la búsqueda (`filtroTexto`) y la cambia con `setFiltro()`, que refresca la tabla. Siempre consulta a `buscarPorTexto()`, por eso un cliente nuevo aparece solo si coincide con la búsqueda. `VentanaPrincipal` tiene `campoBusqueda` arriba de la tabla de clientes y llama a `setFiltro()` con cada cambio de texto, sin botón.
+- `ServicioClientes.eliminarCliente(c)` quita al cliente de la base y declara `throws AlquilerException` para que #9 pueda rechazar a un cliente con un contrato activo sin cambiar su firma; hoy no lanza nada. Si el cliente no está registrado no hace nada. Los números ya asignados no se reutilizan: el siguiente cliente sigue la numeración (`Agencia.siguienteIdCliente()`).
+- `ModeloTablaClientes.getClienteEn(fila)` devuelve el cliente de esa fila según la búsqueda (`filtroTexto`). `VentanaPrincipal` tiene `eliminarClienteBoton`, habilitado solo con una fila elegida; `eliminarClienteElegido()` (privado) pide confirmación con nombre completo y DNI, llama al servicio y refresca la tabla conservando la búsqueda; si el servicio lanza una excepción la muestra en un diálogo "No se pudo eliminar el cliente".
 - Los getters de `Cliente`, `LicenciaConducir` y `Agencia.getClientes()` no se dibujan completos en el diagrama (ver la primera nota).
 - El formato de fecha dd/mm/aaaa está definido dos veces (`FORMATO_FECHA` en `FormularioCliente` y en `ModeloTablaClientes`): candidato a refactor.
 - El punto de entrada (`Main`) está en el paquete `vista`.
