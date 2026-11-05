@@ -15,6 +15,7 @@ import modelo.clientes.LicenciaConducir;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ServicioClientesTest {
 
@@ -92,5 +93,20 @@ class ServicioClientesTest {
 
         assertEquals("La licencia debe tener al menos una categoría", e.getMessage());
         assertTrue(servicio.listarClientes().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"30123456", " 30123456 "})
+    void unDniYaRegistradoLanzaExcepcionYLaListaNoCambia(String dniRepetido) throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente original = cliente("30123456");
+        servicio.registrarCliente(original);
+        Cliente repetido = cliente(dniRepetido);
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.registrarCliente(repetido));
+
+        assertEquals("El DNI 30123456 ya está registrado", e.getMessage());
+        assertEquals(List.of(original), servicio.listarClientes());
     }
 }

@@ -23,6 +23,12 @@ public class ServicioClientes {
         if (c.getLicencia().getCategorias().isEmpty()) {
             throw new AlquilerException("La licencia debe tener al menos una categoría");
         }
+        String dni = c.getDni().trim();
+        for (Cliente existente : agencia.getClientes()) {
+            if (existente.getDni().trim().equals(dni)) {
+                throw new AlquilerException("El DNI " + dni + " ya está registrado");
+            }
+        }
         c.setId(agencia.siguienteIdCliente());
         agencia.getClientes().add(c);
     }
