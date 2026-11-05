@@ -24,7 +24,7 @@ public class GestorPersistencia {
         try (ObjectOutputStream salida = new ObjectOutputStream(Files.newOutputStream(archivo.toPath()))) {
             salida.writeObject(a);
         } catch (IOException e) {
-            throw new AlquilerException("No se pudieron guardar los datos");
+            throw new AlquilerException("No se pudieron guardar los datos", e);
         }
     }
 
@@ -32,7 +32,7 @@ public class GestorPersistencia {
         try (ObjectInputStream entrada = new ObjectInputStream(Files.newInputStream(archivo.toPath()))) {
             return (Agencia) entrada.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            throw new AlquilerException("No se pudieron cargar los datos");
+            throw new AlquilerException("No se pudieron cargar los datos", e);
         }
     }
 }

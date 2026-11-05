@@ -2,11 +2,15 @@ package persistencia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import excepciones.AlquilerException;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Set;
@@ -185,5 +189,77 @@ class GestorPersistenciaTest {
 
         assertEquals(3, cargada.siguienteIdCliente());
         assertEquals(4, cargada.siguienteNroContrato());
+    }
+
+    @Test
+    void cargarUnArchivoDaniadoLanzaExcepcionConElMensajeDeCarga() throws Exception {
+        File archivo = new File(carpeta.toFile(), "agencia.dat");
+        Files.write(archivo.toPath(), "esto no es una agencia".getBytes());
+        GestorPersistencia gestor = new GestorPersistencia(archivo);
+
+        AlquilerException error = assertThrows(AlquilerException.class, gestor::cargar);
+
+        assertEquals("No se pudieron cargar los datos", error.getMessage());
+    }
+
+    @Test
+    void cargarUnArchivoVacioLanzaExcepcionConElMensajeDeCarga() throws Exception {
+        File archivo = new File(carpeta.toFile(), "agencia.dat");
+        Files.write(archivo.toPath(), new byte[0]);
+        GestorPersistencia gestor = new GestorPersistencia(archivo);
+
+        AlquilerException error = assertThrows(AlquilerException.class, gestor::cargar);
+
+        assertEquals("No se pudieron cargar los datos", error.getMessage());
+    }
+
+    @Test
+    void cargarCuandoElArchivoNoExisteLanzaExcepcionConElMensajeDeCarga() {
+        GestorPersistencia gestor = new GestorPersistencia(new File(carpeta.toFile(), "agencia.dat"));
+
+        AlquilerException error = assertThrows(AlquilerException.class, gestor::cargar);
+
+        assertEquals("No se pudieron cargar los datos", error.getMessage());
+    }
+
+    @Test
+    void guardarDondeNoSePuedeEscribirLanzaExcepcionConElMensajeDeGuardado() {
+        GestorPersistencia gestor = new GestorPersistencia(
+                new File(new File(carpeta.toFile(), "carpeta-inexistente"), "agencia.dat"));
+
+        AlquilerException error = assertThrows(AlquilerException.class,
+                () -> gestor.guardar(new Agencia()));
+
+        assertEquals("No se pudieron guardar los datos", error.getMessage());
+    }
+
+    @Test
+    void guardarDeNuevoSobrescribeElArchivoYSeCargaLoUltimoGuardado() throws AlquilerException {
+        GestorPersistencia gestor = new GestorPersistencia(new File(carpeta.toFile(), "agencia.dat"));
+        Agencia agencia = new Agencia();
+        agencia.getVehiculos().add(new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL));
+        gestor.guardar(agencia);
+        agencia.getVehiculos().add(new Moto("XY987ZW", "Honda", "CB125", "Rojo", 2023, 5000,
+                8000.0, 125, true));
+        gestor.guardar(agencia);
+
+        Agencia cargada = gestor.cargar();
+
+        assertEquals(2, cargada.getVehiculos().size());
+    }
+
+    @Test
+    void lasExcepcionesDeGuardarYCargarConservanElErrorOriginalComoCausa() {
+        GestorPersistencia sinArchivo = new GestorPersistencia(new File(carpeta.toFile(), "agencia.dat"));
+        GestorPersistencia sinCarpeta = new GestorPersistencia(
+                new File(new File(carpeta.toFile(), "carpeta-inexistente"), "agencia.dat"));
+
+        AlquilerException alCargar = assertThrows(AlquilerException.class, sinArchivo::cargar);
+        AlquilerException alGuardar = assertThrows(AlquilerException.class,
+                () -> sinCarpeta.guardar(new Agencia()));
+
+        assertInstanceOf(IOException.class, alCargar.getCause());
+        assertInstanceOf(IOException.class, alGuardar.getCause());
     }
 }
