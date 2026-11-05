@@ -151,6 +151,7 @@ classDiagram
         }
         class ServicioAlquiler {
             -agencia: Agencia
+            +ServicioAlquiler(agencia: Agencia)
             +crearContrato(c: Cliente, v: Vehiculo, t: Tarifa, fin: LocalDate) Contrato
             +registrarDevolucion(c: Contrato, fecha: LocalDate, kmFinal: int) void
             +listarContratos(estado: EstadoContrato) List~Contrato~
@@ -312,7 +313,9 @@ classDiagram
         class AlquilerException {
             +AlquilerException(mensaje: String)
         }
-        class VehiculoNoDisponibleException
+        class VehiculoNoDisponibleException {
+            +VehiculoNoDisponibleException(patente: String)
+        }
         class ConductorNoHabilitadoException
     }
 

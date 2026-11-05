@@ -8,6 +8,7 @@ import modelo.tarifas.Tarifa;
 
 public class Contrato {
 
+    private int numero;
     private final Cliente cliente;
     private final Vehiculo vehiculo;
     private final Tarifa tarifa;
@@ -24,6 +25,14 @@ public class Contrato {
         this.fechaInicio = fechaInicio;
         this.fechaFinPrevista = fechaFinPrevista;
         this.kmInicial = vehiculo.getKilometraje();
+    }
+
+    public int getNumero() {
+        return numero;
+    }
+
+    public void setNumero(int numero) {
+        this.numero = numero;
     }
 
     public Cliente getCliente() {
