@@ -109,4 +109,17 @@ class ServicioClientesTest {
         assertEquals("El DNI 30123456 ya está registrado", e.getMessage());
         assertEquals(List.of(original), servicio.listarClientes());
     }
+
+    @Test
+    void unClienteMenorDeDieciochoAniosSeRegistraIgual() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        LicenciaConducir licencia = new LicenciaConducir("L123456",
+                Set.of(CategoriaLicencia.B), LocalDate.now().plusYears(3));
+        Cliente menor = new Cliente("Ana", "Gomez", "30123456",
+                LocalDate.now().minusYears(17), "3874123456", licencia);
+
+        servicio.registrarCliente(menor);
+
+        assertEquals(List.of(menor), servicio.listarClientes());
+    }
 }
