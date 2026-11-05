@@ -23,6 +23,26 @@ public class Cliente {
         this.licencia = licencia;
     }
 
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public String getDni() {
+        return dni;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public LicenciaConducir getLicencia() {
+        return licencia;
+    }
+
     public int getId() {
         return id;
     }

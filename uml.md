@@ -111,6 +111,7 @@ classDiagram
         class ServicioClientes {
             -agencia: Agencia
             +registrarCliente(c: Cliente) void
+            -exigir(valor: String, campo: String) void
             +eliminarCliente(c: Cliente) void
             +buscarPorTexto(texto: String) List~Cliente~
             +listarClientes() List~Cliente~

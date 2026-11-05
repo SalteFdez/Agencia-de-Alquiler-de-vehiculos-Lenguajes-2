@@ -16,6 +16,10 @@ public class LicenciaConducir {
         this.fechaVencimiento = fechaVencimiento;
     }
 
+    public String getNumero() {
+        return numero;
+    }
+
     public boolean estaVigente(LocalDate fecha) {
         return !fecha.isAfter(fechaVencimiento);
     }
