@@ -53,6 +53,27 @@ public class ServicioAlquiler {
         return "su licencia no está vigente hasta el " + fin.format(FORMATO_FECHA);
     }
 
+    public void registrarDevolucion(Contrato c, LocalDate fecha, int kmFinal)
+            throws AlquilerException {
+        if (c.getEstado() == EstadoContrato.FINALIZADO) {
+            throw new AlquilerException("El contrato " + c.getNumero() + " ya está finalizado");
+        }
+        if (fecha.isBefore(c.getFechaInicio())) {
+            throw new AlquilerException(
+                    "La fecha de devolución no puede ser anterior al inicio del contrato");
+        }
+        if (fecha.isAfter(LocalDate.now())) {
+            throw new AlquilerException("La fecha de devolución no puede ser posterior a hoy");
+        }
+        if (kmFinal < c.getKmInicial()) {
+            throw new AlquilerException(
+                    "El km final no puede ser menor al km inicial (" + c.getKmInicial() + ")");
+        }
+        c.finalizar(fecha, kmFinal);
+        c.getVehiculo().actualizarKilometraje(kmFinal);
+        c.getVehiculo().cambiarEstado(EstadoVehiculo.DISPONIBLE);
+    }
+
     public List<Contrato> listarContratos(EstadoContrato estado) {
         List<Contrato> encontrados = new ArrayList<>();
         for (Contrato c : agencia.getContratos()) {

@@ -252,4 +252,141 @@ class ServicioAlquilerTest {
                 () -> servicio.crearContrato(menor, auto, new TarifaDiaria(),
                         LocalDate.now().plusDays(3)));
     }
+
+    private static Contrato contratoActivo(Agencia agencia, Auto auto, LocalDate inicio,
+                                           LocalDate finPrevisto) {
+        Contrato contrato = new Contrato(cliente(), auto, new TarifaDiaria(), inicio, finPrevisto);
+        contrato.setNumero(agencia.siguienteNroContrato());
+        auto.cambiarEstado(EstadoVehiculo.ALQUILADO);
+        agencia.getContratos().add(contrato);
+        return contrato;
+    }
+
+    @Test
+    void registrarUnaDevolucionValidaFinalizaElContratoActualizaElKmDelVehiculoYLoDejaDisponible()
+            throws AlquilerException {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Auto auto = auto("AB123CD");
+        Contrato contrato = contratoActivo(agencia, auto, LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+
+        servicio.registrarDevolucion(contrato, LocalDate.now(), 15400);
+
+        assertEquals(EstadoContrato.FINALIZADO, contrato.getEstado());
+        assertEquals(LocalDate.now(), contrato.getFechaDevolucion());
+        assertEquals(15400, contrato.getKmFinal());
+        assertEquals(15400, auto.getKilometraje());
+        assertEquals(EstadoVehiculo.DISPONIBLE, auto.getEstado());
+    }
+
+    @Test
+    void devolverUnContratoYaFinalizadoLanzaExcepcionYNoCambiaNiElContratoNiElVehiculo() {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Auto auto = auto("AB123CD");
+        Contrato contrato = contratoActivo(agencia, auto, LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+        contrato.finalizar(LocalDate.now().minusDays(1), 15400);
+
+        AlquilerException error = assertThrows(AlquilerException.class,
+                () -> servicio.registrarDevolucion(contrato, LocalDate.now(), 16000));
+
+        assertEquals("El contrato 1 ya está finalizado", error.getMessage());
+        assertEquals(LocalDate.now().minusDays(1), contrato.getFechaDevolucion());
+        assertEquals(15400, contrato.getKmFinal());
+        assertEquals(15000, auto.getKilometraje());
+        assertEquals(EstadoVehiculo.ALQUILADO, auto.getEstado());
+    }
+
+    @Test
+    void devolverConFechaAnteriorAlInicioLanzaExcepcionYNoCambiaNada() {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Auto auto = auto("AB123CD");
+        Contrato contrato = contratoActivo(agencia, auto, LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+
+        AlquilerException error = assertThrows(AlquilerException.class,
+                () -> servicio.registrarDevolucion(contrato, LocalDate.now().minusDays(4), 15400));
+
+        assertEquals("La fecha de devolución no puede ser anterior al inicio del contrato",
+                error.getMessage());
+        assertEquals(EstadoContrato.ACTIVO, contrato.getEstado());
+        assertEquals(15000, auto.getKilometraje());
+        assertEquals(EstadoVehiculo.ALQUILADO, auto.getEstado());
+    }
+
+    @Test
+    void devolverConFechaPosteriorAHoyLanzaExcepcionYNoCambiaNada() {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Auto auto = auto("AB123CD");
+        Contrato contrato = contratoActivo(agencia, auto, LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+
+        AlquilerException error = assertThrows(AlquilerException.class,
+                () -> servicio.registrarDevolucion(contrato, LocalDate.now().plusDays(1), 15400));
+
+        assertEquals("La fecha de devolución no puede ser posterior a hoy", error.getMessage());
+        assertEquals(EstadoContrato.ACTIVO, contrato.getEstado());
+        assertEquals(15000, auto.getKilometraje());
+        assertEquals(EstadoVehiculo.ALQUILADO, auto.getEstado());
+    }
+
+    @Test
+    void devolverConKmFinalMenorAlInicialLanzaExcepcionYNoCambiaNada() {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Auto auto = auto("AB123CD");
+        Contrato contrato = contratoActivo(agencia, auto, LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+
+        AlquilerException error = assertThrows(AlquilerException.class,
+                () -> servicio.registrarDevolucion(contrato, LocalDate.now(), 14999));
+
+        assertEquals("El km final no puede ser menor al km inicial (15000)", error.getMessage());
+        assertEquals(EstadoContrato.ACTIVO, contrato.getEstado());
+        assertEquals(15000, auto.getKilometraje());
+        assertEquals(EstadoVehiculo.ALQUILADO, auto.getEstado());
+    }
+
+    @Test
+    void devolverConKmFinalIgualAlInicialSeAcepta() throws AlquilerException {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Auto auto = auto("AB123CD");
+        Contrato contrato = contratoActivo(agencia, auto, LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+
+        servicio.registrarDevolucion(contrato, LocalDate.now(), 15000);
+
+        assertEquals(EstadoContrato.FINALIZADO, contrato.getEstado());
+        assertEquals(0, contrato.getKmRecorridos());
+    }
+
+    @Test
+    void conVariosProblemasSeInformaPrimeroElContratoFinalizadoLuegoLaFechaYDespuesElKm() {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Auto auto = auto("AB123CD");
+        Contrato finalizado = contratoActivo(agencia, auto, LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+        finalizado.finalizar(LocalDate.now().minusDays(1), 15400);
+        Contrato activo = contratoActivo(agencia, auto("XY987ZW"), LocalDate.now().minusDays(3),
+                LocalDate.now().plusDays(2));
+
+        AlquilerException finalizadoYFechaMala = assertThrows(AlquilerException.class,
+                () -> servicio.registrarDevolucion(finalizado, LocalDate.now().plusDays(1), 100));
+        AlquilerException fechaPosteriorYKmMalo = assertThrows(AlquilerException.class,
+                () -> servicio.registrarDevolucion(activo, LocalDate.now().plusDays(1), 100));
+        AlquilerException fechaAnteriorYKmMalo = assertThrows(AlquilerException.class,
+                () -> servicio.registrarDevolucion(activo, LocalDate.now().minusDays(4), 100));
+
+        assertEquals("El contrato 1 ya está finalizado", finalizadoYFechaMala.getMessage());
+        assertEquals("La fecha de devolución no puede ser posterior a hoy",
+                fechaPosteriorYKmMalo.getMessage());
+        assertEquals("La fecha de devolución no puede ser anterior al inicio del contrato",
+                fechaAnteriorYKmMalo.getMessage());
+    }
 }
