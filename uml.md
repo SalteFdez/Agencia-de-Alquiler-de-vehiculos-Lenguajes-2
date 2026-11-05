@@ -52,12 +52,14 @@ classDiagram
             -eliminarClienteElegido() void
         }
         class PanelContratos {
+            -TODOS: String$
             -padre: Frame
             -servicioAlquiler: ServicioAlquiler
             -servicioClientes: ServicioClientes
             -servicioFlota: ServicioFlota
             -alCrear: Runnable
             -modelo: ModeloTablaContratos
+            -comboEstado: JComboBox~String~
             -tablaContratos: JTable
             -nuevoContrato: JButton
             -devolucionBoton: JButton
@@ -169,7 +171,9 @@ classDiagram
             -COLUMNAS: String[]$
             -FORMATO_FECHA: DateTimeFormatter$
             -servicio: ServicioAlquiler
+            -filtroEstado: EstadoContrato
             +ModeloTablaContratos(servicio: ServicioAlquiler)
+            +setFiltro(estado: EstadoContrato) void
             +getRowCount() int
             +getColumnCount() int
             +getColumnName(columna: int) String

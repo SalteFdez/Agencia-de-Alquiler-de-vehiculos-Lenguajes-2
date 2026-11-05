@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import modelo.alquiler.Contrato;
+import modelo.alquiler.EstadoContrato;
 import servicio.ServicioAlquiler;
 
 public class ModeloTablaContratos extends AbstractTableModel {
@@ -15,14 +16,20 @@ public class ModeloTablaContratos extends AbstractTableModel {
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ServicioAlquiler servicio;
+    private EstadoContrato filtroEstado;
 
     public ModeloTablaContratos(ServicioAlquiler servicio) {
         this.servicio = servicio;
     }
 
+    public void setFiltro(EstadoContrato estado) {
+        this.filtroEstado = estado;
+        fireTableDataChanged();
+    }
+
     @Override
     public int getRowCount() {
-        return servicio.listarContratos(null).size();
+        return servicio.listarContratos(filtroEstado).size();
     }
 
     @Override
@@ -37,7 +44,7 @@ public class ModeloTablaContratos extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int fila, int columna) {
-        List<Contrato> contratos = servicio.listarContratos(null);
+        List<Contrato> contratos = servicio.listarContratos(filtroEstado);
         Contrato c = contratos.get(fila);
         switch (columna) {
             case 0: return c.getNumero();
@@ -52,6 +59,6 @@ public class ModeloTablaContratos extends AbstractTableModel {
     }
 
     public Contrato getContratoEn(int fila) {
-        return servicio.listarContratos(null).get(fila);
+        return servicio.listarContratos(filtroEstado).get(fila);
     }
 }

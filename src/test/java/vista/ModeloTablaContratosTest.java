@@ -3,10 +3,13 @@ package vista;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import excepciones.AlquilerException;
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import modelo.Agencia;
 import modelo.alquiler.Contrato;
+import modelo.alquiler.EstadoContrato;
 import modelo.clientes.CategoriaLicencia;
 import modelo.clientes.Cliente;
 import modelo.clientes.LicenciaConducir;
@@ -87,5 +90,115 @@ class ModeloTablaContratosTest {
 
         assertEquals("FINALIZADO", modelo.getValueAt(0, 6));
         assertEquals(70000.0, (Double) modelo.getValueAt(0, 7), 0.001);
+    }
+
+    private static ModeloTablaContratos modeloConUnActivoYUnFinalizado(Agencia agencia) {
+        Contrato activo = contrato(1, "AB123CD", LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 8));
+        Contrato finalizado = contrato(2, "XY987ZW", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 4));
+        finalizado.finalizar(LocalDate.of(2026, 11, 4), 15300);
+        agencia.getContratos().add(activo);
+        agencia.getContratos().add(finalizado);
+        return new ModeloTablaContratos(new ServicioAlquiler(agencia));
+    }
+
+    @Test
+    void conUnEstadoElegidoLaTablaMuestraSoloLosContratosConEseEstado() {
+        ModeloTablaContratos modelo = modeloConUnActivoYUnFinalizado(new Agencia());
+
+        modelo.setFiltro(EstadoContrato.ACTIVO);
+
+        assertEquals(1, modelo.getRowCount());
+        assertEquals(1, modelo.getValueAt(0, 0));
+        assertEquals("ACTIVO", modelo.getValueAt(0, 6));
+
+        modelo.setFiltro(EstadoContrato.FINALIZADO);
+
+        assertEquals(1, modelo.getRowCount());
+        assertEquals(2, modelo.getValueAt(0, 0));
+        assertEquals("FINALIZADO", modelo.getValueAt(0, 6));
+    }
+
+    @Test
+    void volverASinFiltroMuestraTodosLosContratos() {
+        ModeloTablaContratos modelo = modeloConUnActivoYUnFinalizado(new Agencia());
+        modelo.setFiltro(EstadoContrato.ACTIVO);
+
+        modelo.setFiltro(null);
+
+        assertEquals(2, modelo.getRowCount());
+        assertEquals(1, modelo.getValueAt(0, 0));
+        assertEquals(2, modelo.getValueAt(1, 0));
+    }
+
+    @Test
+    void cambiarElFiltroAvisaALaTablaQueLosDatosCambiaron() {
+        ModeloTablaContratos modelo = new ModeloTablaContratos(new ServicioAlquiler(new Agencia()));
+        AtomicInteger avisos = new AtomicInteger();
+        modelo.addTableModelListener(e -> avisos.incrementAndGet());
+
+        modelo.setFiltro(EstadoContrato.ACTIVO);
+
+        assertEquals(1, avisos.get());
+    }
+
+    @Test
+    void getContratoEnRespetaElFiltroElegido() {
+        Agencia agencia = new Agencia();
+        Contrato finalizado = contrato(1, "AB123CD", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 4));
+        finalizado.finalizar(LocalDate.of(2026, 11, 4), 15300);
+        Contrato activo = contrato(2, "XY987ZW", LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 8));
+        agencia.getContratos().add(finalizado);
+        agencia.getContratos().add(activo);
+        ModeloTablaContratos modelo = new ModeloTablaContratos(new ServicioAlquiler(agencia));
+
+        modelo.setFiltro(EstadoContrato.ACTIVO);
+
+        assertSame(activo, modelo.getContratoEn(0));
+    }
+
+    @Test
+    void conElFiltroActivoUnContratoRecienDevueltoDesapareceDeLaTabla() throws AlquilerException {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Contrato primero = contrato(1, "AB123CD", LocalDate.now().minusDays(3), LocalDate.now().plusDays(2));
+        Contrato segundo = contrato(2, "XY987ZW", LocalDate.now().minusDays(2), LocalDate.now().plusDays(3));
+        agencia.getContratos().add(primero);
+        agencia.getContratos().add(segundo);
+        ModeloTablaContratos modelo = new ModeloTablaContratos(servicio);
+        modelo.setFiltro(EstadoContrato.ACTIVO);
+        assertEquals(2, modelo.getRowCount());
+
+        servicio.registrarDevolucion(primero, LocalDate.now(), 15400);
+
+        assertEquals(1, modelo.getRowCount());
+        assertSame(segundo, modelo.getContratoEn(0));
+        modelo.setFiltro(EstadoContrato.FINALIZADO);
+        assertEquals(1, modelo.getRowCount());
+        assertSame(primero, modelo.getContratoEn(0));
+    }
+
+    @Test
+    void unContratoNuevoApareceConElFiltroActivoOTodosYNoConElFiltroFinalizado()
+            throws AlquilerException {
+        Agencia agencia = new Agencia();
+        ServicioAlquiler servicio = new ServicioAlquiler(agencia);
+        Contrato finalizado = contrato(1, "AB123CD", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 4));
+        finalizado.finalizar(LocalDate.of(2026, 11, 4), 15300);
+        agencia.getContratos().add(finalizado);
+        agencia.siguienteNroContrato();
+        ModeloTablaContratos modelo = new ModeloTablaContratos(servicio);
+        modelo.setFiltro(EstadoContrato.FINALIZADO);
+
+        Contrato nuevo = servicio.crearContrato(finalizado.getCliente(),
+                new Auto("NV456EW", "Fiat", "Cronos", "Blanco", 2022, 15000, 10000.0, 4, 5, TipoCaja.MANUAL),
+                new TarifaDiaria(), LocalDate.now().plusDays(3));
+
+        assertEquals(1, modelo.getRowCount());
+        assertSame(finalizado, modelo.getContratoEn(0));
+        modelo.setFiltro(EstadoContrato.ACTIVO);
+        assertEquals(1, modelo.getRowCount());
+        assertSame(nuevo, modelo.getContratoEn(0));
+        modelo.setFiltro(null);
+        assertEquals(2, modelo.getRowCount());
     }
 }
