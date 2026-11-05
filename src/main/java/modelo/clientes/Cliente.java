@@ -5,6 +5,8 @@ import java.time.Period;
 
 public class Cliente {
 
+    public static final int EDAD_MINIMA = 18;
+
     private int id;
     private final String nombre;
     private final String apellido;

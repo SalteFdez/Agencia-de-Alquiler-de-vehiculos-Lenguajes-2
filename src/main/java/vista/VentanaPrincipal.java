@@ -13,6 +13,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
+import servicio.ServicioClientes;
 import servicio.ServicioFlota;
 
 public class VentanaPrincipal extends JFrame {
@@ -25,22 +26,24 @@ public class VentanaPrincipal extends JFrame {
             new JComboBox<>(new String[] {TODOS, "DISPONIBLE", "ALQUILADO"});
     private final JTable tablaFlota;
     private final JButton darDeBaja = new JButton("Dar de baja");
+    private final JTable tablaClientes;
+    private final JButton agregarCliente = new JButton("Agregar cliente");
 
-    public VentanaPrincipal(ServicioFlota servicio) {
+    public VentanaPrincipal(ServicioFlota servicioFlota, ServicioClientes servicioClientes) {
         super("Agencia de alquiler de vehículos");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        ModeloTablaFlota modelo = new ModeloTablaFlota(servicio);
+        ModeloTablaFlota modelo = new ModeloTablaFlota(servicioFlota);
         tablaFlota = new JTable(modelo);
         JButton agregarAuto = new JButton("Agregar auto");
         agregarAuto.addActionListener(e ->
-                new FormularioAuto(this, servicio, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioAuto(this, servicioFlota, modelo::fireTableDataChanged).setVisible(true));
         JButton agregarMoto = new JButton("Agregar moto");
         agregarMoto.addActionListener(e ->
-                new FormularioMoto(this, servicio, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioMoto(this, servicioFlota, modelo::fireTableDataChanged).setVisible(true));
         JButton agregarCamioneta = new JButton("Agregar camioneta");
         agregarCamioneta.addActionListener(e ->
-                new FormularioCamioneta(this, servicio, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioCamioneta(this, servicioFlota, modelo::fireTableDataChanged).setVisible(true));
 
         Runnable aplicarFiltro = () -> modelo.setFiltro(
                 TODOS.equals(comboTipo.getSelectedItem()) ? null : (String) comboTipo.getSelectedItem(),
@@ -60,7 +63,7 @@ public class VentanaPrincipal extends JFrame {
                 return;
             }
             try {
-                servicio.eliminarVehiculo(elegido);
+                servicioFlota.eliminarVehiculo(elegido);
                 modelo.fireTableDataChanged();
             } catch (AlquilerException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(),
@@ -83,8 +86,20 @@ public class VentanaPrincipal extends JFrame {
         botones.add(darDeBaja);
         flota.add(botones, BorderLayout.SOUTH);
 
+        ModeloTablaClientes modeloClientes = new ModeloTablaClientes(servicioClientes);
+        tablaClientes = new JTable(modeloClientes);
+        agregarCliente.addActionListener(e ->
+                new FormularioCliente(this, servicioClientes, modeloClientes::fireTableDataChanged)
+                        .setVisible(true));
+        JPanel clientes = new JPanel(new BorderLayout());
+        clientes.add(new JScrollPane(tablaClientes), BorderLayout.CENTER);
+        JPanel botonesClientes = new JPanel();
+        botonesClientes.add(agregarCliente);
+        clientes.add(botonesClientes, BorderLayout.SOUTH);
+
         JTabbedPane pestanias = new JTabbedPane();
         pestanias.addTab("Flota", flota);
+        pestanias.addTab("Clientes", clientes);
         add(pestanias);
 
         setSize(900, 500);

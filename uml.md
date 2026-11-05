@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #5 terminada (dar de baja un vehículo).
+Última actualización: historia #6 terminada (registrar un cliente con su licencia).
 
 ## Diagrama
 
@@ -56,8 +56,18 @@ classDiagram
             -FORMATO_FECHA: DateTimeFormatter$
             -servicio: ServicioClientes
             -alRegistrar: Runnable
+            -nombre: JTextField
+            -apellido: JTextField
+            -dni: JTextField
+            -fechaNacimiento: JTextField
+            -telefono: JTextField
+            -numero: JTextField
+            -fechaVencimiento: JTextField
+            -categorias: Map~CategoriaLicencia, JCheckBox~
             +FormularioCliente(padre: Frame, servicio: ServicioClientes, alRegistrar: Runnable)
+            -agregar(panel: JPanel, etiqueta: String, campo: Component)$ void
             -guardar() void
+            -avisarSiNoPuedeAlquilar(cliente: Cliente) void
             ~fecha(etiqueta: String, campo: JTextField)$ LocalDate
         }
         class PanelDatosVehiculo {
@@ -357,11 +367,14 @@ classDiagram
 | `EstadoVehiculo`, `TipoCaja` | `modelo.flota` | Hecho | — | #1 |
 | `Moto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `Camioneta` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
-| `Agencia` | `modelo` | Parcial | `clientes`, `contratos`, contadores y sus métodos | #6, #9 |
+| `Agencia` | `modelo` | Parcial | `contratos`, `ultimoNroContrato`, `siguienteNroContrato()` | #9 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `PanelDatosVehiculo`, `ModeloTablaFlota` | `vista` | Hecho para #5 | Crecen con cada historia | #1, #2, #3, #4, #5 |
-| `Cliente`, `LicenciaConducir`, `CategoriaLicencia`, `ServicioClientes` | `modelo.clientes`, `servicio` | Pendiente | Todo | #6, #7, #8 |
+| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes` | `vista` | Hecho para #6 | Crecen con cada historia | #1, #2, #3, #4, #5, #6 |
+| `CategoriaLicencia` | `modelo.clientes` | Hecho | — | #6 |
+| `LicenciaConducir` | `modelo.clientes` | Parcial | `habilitaPara()` | #10 |
+| `Cliente` | `modelo.clientes` | Parcial | `puedeConducir()` | #10 |
+| `ServicioClientes` | `servicio` | Parcial | `eliminarCliente()`, `buscarPorTexto()` | #7, #8 |
 | `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #12, #15 |
 | `Tarifa`, `TarifaDiaria`, `TarifaSemanal`, `TarifaKilometraje` | `modelo.tarifas` | Pendiente | Todo | #9, #13, #14 |
 | `VehiculoNoDisponibleException`, `ConductorNoHabilitadoException` | `excepciones` | Pendiente | Todo | #9, #10 |
@@ -381,4 +394,11 @@ classDiagram
 - En `VentanaPrincipal`, el botón `darDeBaja` está habilitado solo con una fila elegida en `tablaFlota`. Pide confirmación mostrando la patente; si se confirma, llama a `eliminarVehiculo()` y refresca la tabla conservando el filtro, y si hay error lo muestra en un cuadro de diálogo.
 - `Vehiculo.cambiarEstado()` asigna el estado sin validar nada. Las reglas de cuándo se puede alquilar o devolver llegan con #9 y #11.
 - `getFactorTarifa()` es protegido: solo lo usa `getPrecioDiario()`. `Camioneta` devuelve 1,4, o 1,6 si tiene tracción 4x4.
+- `ServicioClientes.registrarCliente()` rechaza con `AlquilerException`, en este orden: nombre, apellido, DNI, teléfono o número de licencia vacíos o en blanco ("El campo <campo> es obligatorio"), licencia sin categorías y DNI repetido (se compara sin espacios sobrantes). Valida todo antes de asignar el número con `Agencia.siguienteIdCliente()` (1, 2, 3…), así un cliente rechazado no consume número. Un cliente menor de edad o con la licencia vencida se registra igual.
+- `exigir(valor, campo)` es un método privado de `ServicioClientes` que evita repetir la validación de obligatorios.
+- `Cliente.getEdad()` cuenta los años completos hasta hoy. `LicenciaConducir.estaVigente(fecha)` es verdadera hasta el día del vencimiento inclusive. `Cliente.EDAD_MINIMA` es 18 y la usa `FormularioCliente` para decidir el aviso; `Cliente.setId()` lo usa solo el servicio.
+- `FormularioCliente` lee las fechas con `fecha(etiqueta, campo)` (formato dd/mm/aaaa estricto: rechaza 31/02) y tiene una casilla por cada `CategoriaLicencia`. Después de registrar, si el cliente es menor de `EDAD_MINIMA` o su licencia no está vigente hoy, muestra un aviso que empieza con "Cliente registrado, pero todavía no va a poder alquilar". `agregar()` y `avisarSiNoPuedeAlquilar()` son métodos privados suyos.
+- `ModeloTablaClientes` muestra número, nombre completo, DNI, teléfono, categorías (ordenadas y separadas por coma) y vencimiento en dd/mm/aaaa. `VentanaPrincipal` tiene la pestaña "Clientes" con `tablaClientes` y `agregarCliente`, y recibe los dos servicios; `Main` los crea con la misma `Agencia`.
+- Los getters de `Cliente`, `LicenciaConducir` y `Agencia.getClientes()` no se dibujan completos en el diagrama (ver la primera nota).
+- El formato de fecha dd/mm/aaaa está definido dos veces (`FORMATO_FECHA` en `FormularioCliente` y en `ModeloTablaClientes`): candidato a refactor.
 - El punto de entrada (`Main`) está en el paquete `vista`.
