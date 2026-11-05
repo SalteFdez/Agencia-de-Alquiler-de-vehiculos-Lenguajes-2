@@ -12,6 +12,9 @@ import modelo.Agencia;
 import modelo.clientes.CategoriaLicencia;
 import modelo.clientes.Cliente;
 import modelo.clientes.LicenciaConducir;
+import modelo.flota.Auto;
+import modelo.flota.TipoCaja;
+import modelo.tarifas.TarifaDiaria;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -30,6 +33,11 @@ class ServicioClientesTest {
         LicenciaConducir licencia = new LicenciaConducir("L123456",
                 Set.of(CategoriaLicencia.B), LocalDate.now().plusYears(3));
         return new Cliente(nombre, apellido, dni, LocalDate.of(1990, 5, 20), "3874123456", licencia);
+    }
+
+    private static Auto auto(String patente) {
+        return new Auto(patente, "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
     }
 
     private static Cliente clienteConCampo(String campo, String valor) {
@@ -261,5 +269,39 @@ class ServicioClientesTest {
         servicio.registrarCliente(nuevo);
 
         assertEquals(3, nuevo.getId());
+    }
+
+    @Test
+    void eliminarUnClienteConUnContratoActivoLanzaExcepcionYElClienteSigueEnLaLista()
+            throws AlquilerException {
+        Agencia agencia = new Agencia();
+        ServicioClientes servicio = new ServicioClientes(agencia);
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        servicio.registrarCliente(ana);
+        new ServicioAlquiler(agencia).crearContrato(ana, auto("AB123CD"), new TarifaDiaria(),
+                LocalDate.now().plusDays(3));
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.eliminarCliente(ana));
+
+        assertEquals("No se puede eliminar un cliente con un contrato activo", e.getMessage());
+        assertEquals(List.of(ana), servicio.listarClientes());
+    }
+
+    @Test
+    void eliminarUnClienteSinContratosFuncionaAunqueOtroTengaUnContratoActivo()
+            throws AlquilerException {
+        Agencia agencia = new Agencia();
+        ServicioClientes servicio = new ServicioClientes(agencia);
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        Cliente luis = cliente("Luis", "Perez", "27987654");
+        servicio.registrarCliente(ana);
+        servicio.registrarCliente(luis);
+        new ServicioAlquiler(agencia).crearContrato(ana, auto("AB123CD"), new TarifaDiaria(),
+                LocalDate.now().plusDays(3));
+
+        servicio.eliminarCliente(luis);
+
+        assertEquals(List.of(ana), servicio.listarClientes());
     }
 }

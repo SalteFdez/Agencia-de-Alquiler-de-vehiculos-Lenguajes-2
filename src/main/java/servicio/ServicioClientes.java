@@ -4,6 +4,8 @@ import excepciones.AlquilerException;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Agencia;
+import modelo.alquiler.Contrato;
+import modelo.alquiler.EstadoContrato;
 import modelo.clientes.Cliente;
 
 public class ServicioClientes {
@@ -40,6 +42,11 @@ public class ServicioClientes {
     }
 
     public void eliminarCliente(Cliente c) throws AlquilerException {
+        for (Contrato contrato : agencia.getContratos()) {
+            if (contrato.getCliente().equals(c) && contrato.getEstado() == EstadoContrato.ACTIVO) {
+                throw new AlquilerException("No se puede eliminar un cliente con un contrato activo");
+            }
+        }
         agencia.getClientes().remove(c);
     }
 
