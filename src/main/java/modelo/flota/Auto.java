@@ -1,6 +1,7 @@
 package modelo.flota;
 
 import excepciones.AlquilerException;
+import modelo.clientes.CategoriaLicencia;
 
 public class Auto extends Vehiculo {
 
@@ -30,6 +31,11 @@ public class Auto extends Vehiculo {
         if (capacidadPasajeros <= 0) {
             throw new AlquilerException("La capacidad de pasajeros debe ser mayor a 0");
         }
+    }
+
+    @Override
+    public CategoriaLicencia getLicenciaRequerida() {
+        return CategoriaLicencia.B;
     }
 
     @Override

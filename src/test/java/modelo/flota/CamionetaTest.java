@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import excepciones.AlquilerException;
+import modelo.clientes.CategoriaLicencia;
 import org.junit.jupiter.api.Test;
 
 class CamionetaTest {
@@ -44,5 +45,13 @@ class CamionetaTest {
                 camioneta::validarDatosPropios);
 
         assertEquals("La capacidad de carga debe ser mayor a 0", error.getMessage());
+    }
+
+    @Test
+    void unaCamionetaRequiereLicenciaDeCategoriaB() {
+        Camioneta camioneta = new Camioneta("AC123DE", "Toyota", "Hilux", "Gris", 2022, 20000,
+                10000.0, 1000.0, false);
+
+        assertEquals(CategoriaLicencia.B, camioneta.getLicenciaRequerida());
     }
 }

@@ -1,6 +1,7 @@
 package modelo.flota;
 
 import excepciones.AlquilerException;
+import modelo.clientes.CategoriaLicencia;
 
 public class Moto extends Vehiculo {
 
@@ -24,6 +25,11 @@ public class Moto extends Vehiculo {
         if (cilindrada <= 0) {
             throw new AlquilerException("La cilindrada debe ser mayor a 0");
         }
+    }
+
+    @Override
+    public CategoriaLicencia getLicenciaRequerida() {
+        return CategoriaLicencia.A;
     }
 
     @Override

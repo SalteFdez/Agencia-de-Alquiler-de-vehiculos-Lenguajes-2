@@ -1,6 +1,7 @@
 package modelo.flota;
 
 import excepciones.AlquilerException;
+import modelo.clientes.CategoriaLicencia;
 
 public abstract class Vehiculo {
 
@@ -69,6 +70,8 @@ public abstract class Vehiculo {
     public void cambiarEstado(EstadoVehiculo e) {
         this.estado = e;
     }
+
+    public abstract CategoriaLicencia getLicenciaRequerida();
 
     protected abstract double getFactorTarifa();
 

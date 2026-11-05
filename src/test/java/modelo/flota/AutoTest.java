@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import modelo.clientes.CategoriaLicencia;
 import org.junit.jupiter.api.Test;
 
 class AutoTest {
@@ -42,5 +43,13 @@ class AutoTest {
                 10000.0, 4, 5, TipoCaja.MANUAL);
 
         assertEquals("AB123CD - Fiat Cronos", auto.toString());
+    }
+
+    @Test
+    void unAutoRequiereLicenciaDeCategoriaB() {
+        Auto auto = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+
+        assertEquals(CategoriaLicencia.B, auto.getLicenciaRequerida());
     }
 }
