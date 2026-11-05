@@ -17,6 +17,6 @@ public class LicenciaConducir {
     }
 
     public boolean estaVigente(LocalDate fecha) {
-        return true;
+        return !fecha.isAfter(fechaVencimiento);
     }
 }
