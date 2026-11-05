@@ -30,4 +30,18 @@ class ServicioClientesTest {
         assertEquals(List.of(cliente), servicio.listarClientes());
         assertEquals(1, cliente.getId());
     }
+
+    @Test
+    void elSegundoClienteRegistradoRecibeElNumeroDos() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente primero = cliente("30123456");
+        Cliente segundo = cliente("27987654");
+
+        servicio.registrarCliente(primero);
+        servicio.registrarCliente(segundo);
+
+        assertEquals(List.of(primero, segundo), servicio.listarClientes());
+        assertEquals(1, primero.getId());
+        assertEquals(2, segundo.getId());
+    }
 }
