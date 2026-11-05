@@ -4,10 +4,10 @@ import excepciones.AlquilerException;
 import excepciones.ConductorNoHabilitadoException;
 import excepciones.VehiculoNoDisponibleException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Agencia;
+import modelo.Formatos;
 import modelo.alquiler.Contrato;
 import modelo.alquiler.EstadoContrato;
 import modelo.clientes.Cliente;
@@ -16,8 +16,6 @@ import modelo.flota.Vehiculo;
 import modelo.tarifas.Tarifa;
 
 public class ServicioAlquiler {
-
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final Agencia agencia;
 
@@ -50,7 +48,7 @@ public class ServicioAlquiler {
         if (!c.getLicencia().getCategorias().contains(v.getLicenciaRequerida())) {
             return "su licencia no tiene la categoría " + v.getLicenciaRequerida();
         }
-        return "su licencia no está vigente hasta el " + fin.format(FORMATO_FECHA);
+        return "su licencia no está vigente hasta el " + fin.format(Formatos.FECHA);
     }
 
     public void registrarDevolucion(Contrato c, LocalDate fecha, int kmFinal)

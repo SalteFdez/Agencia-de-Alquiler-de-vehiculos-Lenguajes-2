@@ -14,8 +14,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import modelo.clientes.Cliente;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
@@ -52,22 +50,7 @@ public class FormularioContrato extends JDialog {
         comboCliente.setSelectedIndex(-1);
         comboVehiculo.setSelectedIndex(-1);
         comboVehiculo.addActionListener(e -> actualizarTotal());
-        campoFechaFin.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                actualizarTotal();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                actualizarTotal();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                actualizarTotal();
-            }
-        });
+        PanelClientes.alCambiarElTexto(campoFechaFin, this::actualizarTotal);
 
         JPanel datos = new JPanel(new GridLayout(0, 2, 8, 8));
         datos.setBorder(new EmptyBorder(12, 12, 12, 12));

@@ -5,7 +5,6 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -13,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import modelo.Formatos;
 import modelo.alquiler.Contrato;
 import servicio.ServicioAlquiler;
 
@@ -32,7 +32,7 @@ public class FormularioDevolucion extends JDialog {
         this.contrato = contrato;
         this.alRegistrar = alRegistrar;
         campoFechaDevolucion.setText(
-                LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                LocalDate.now().format(Formatos.FECHA));
 
         JPanel datos = new JPanel(new GridLayout(0, 2, 8, 8));
         datos.setBorder(new EmptyBorder(12, 12, 12, 12));

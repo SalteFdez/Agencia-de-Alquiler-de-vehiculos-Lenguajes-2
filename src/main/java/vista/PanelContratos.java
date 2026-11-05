@@ -21,7 +21,7 @@ public class PanelContratos extends JPanel {
     private final ServicioAlquiler servicioAlquiler;
     private final ServicioClientes servicioClientes;
     private final ServicioFlota servicioFlota;
-    private final Runnable alCrear;
+    private final Runnable alCambiarFlota;
     private final ModeloTablaContratos modelo;
     private final JComboBox<String> comboEstado =
             new JComboBox<>(new String[] {TODOS, "ACTIVO", "FINALIZADO"});
@@ -31,13 +31,13 @@ public class PanelContratos extends JPanel {
 
     public PanelContratos(Frame padre, ServicioAlquiler servicioAlquiler,
                           ServicioClientes servicioClientes, ServicioFlota servicioFlota,
-                          Runnable alCrear) {
+                          Runnable alCambiarFlota) {
         super(new BorderLayout());
         this.padre = padre;
         this.servicioAlquiler = servicioAlquiler;
         this.servicioClientes = servicioClientes;
         this.servicioFlota = servicioFlota;
-        this.alCrear = alCrear;
+        this.alCambiarFlota = alCambiarFlota;
         this.modelo = new ModeloTablaContratos(servicioAlquiler);
         tablaContratos = new JTable(modelo);
 
@@ -47,7 +47,7 @@ public class PanelContratos extends JPanel {
 
         Runnable alCambiarContratos = () -> {
             modelo.fireTableDataChanged();
-            alCrear.run();
+            alCambiarFlota.run();
         };
 
         nuevoContrato.addActionListener(e ->

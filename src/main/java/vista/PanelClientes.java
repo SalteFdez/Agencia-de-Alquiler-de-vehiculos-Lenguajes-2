@@ -69,7 +69,7 @@ public class PanelClientes extends JPanel {
         }
     }
 
-    private void alCambiarElTexto(JTextField campo, Runnable accion) {
+    static void alCambiarElTexto(JTextField campo, Runnable accion) {
         campo.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

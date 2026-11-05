@@ -1,9 +1,9 @@
 package vista;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.table.AbstractTableModel;
+import modelo.Formatos;
 import modelo.clientes.Cliente;
 import servicio.ServicioClientes;
 
@@ -12,8 +12,6 @@ public class ModeloTablaClientes extends AbstractTableModel {
     private static final String[] COLUMNAS = {
         "Nº", "Nombre", "DNI", "Teléfono", "Categorías", "Vencimiento licencia"
     };
-
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ServicioClientes servicio;
     private String filtroTexto;
@@ -57,7 +55,7 @@ public class ModeloTablaClientes extends AbstractTableModel {
             case 3: return c.getTelefono();
             case 4: return c.getLicencia().getCategorias().stream()
                     .sorted().map(Enum::name).collect(Collectors.joining(", "));
-            default: return c.getLicencia().getFechaVencimiento().format(FORMATO_FECHA);
+            default: return c.getLicencia().getFechaVencimiento().format(Formatos.FECHA);
         }
     }
 }

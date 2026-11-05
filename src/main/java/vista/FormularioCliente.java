@@ -5,9 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -22,15 +20,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import modelo.Formatos;
 import modelo.clientes.CategoriaLicencia;
 import modelo.clientes.Cliente;
 import modelo.clientes.LicenciaConducir;
 import servicio.ServicioClientes;
 
 public class FormularioCliente extends JDialog {
-
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/uuuu")
-            .withResolverStyle(ResolverStyle.STRICT);
 
     private final ServicioClientes servicio;
     private final Runnable alRegistrar;
@@ -128,7 +124,7 @@ public class FormularioCliente extends JDialog {
 
     static LocalDate fecha(String etiqueta, JTextField campo) throws AlquilerException {
         try {
-            return LocalDate.parse(campo.getText().trim(), FORMATO_FECHA);
+            return LocalDate.parse(campo.getText().trim(), Formatos.FECHA);
         } catch (DateTimeParseException ex) {
             throw new AlquilerException("La fecha " + etiqueta + " debe tener el formato dd/mm/aaaa");
         }
