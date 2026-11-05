@@ -1,9 +1,12 @@
 package modelo.clientes;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Set;
 
-public class LicenciaConducir {
+public class LicenciaConducir implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final String numero;
     private final Set<CategoriaLicencia> categorias;

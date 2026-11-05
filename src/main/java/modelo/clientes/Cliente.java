@@ -1,10 +1,13 @@
 package modelo.clientes;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import modelo.flota.Vehiculo;
 import java.time.Period;
 
-public class Cliente {
+public class Cliente implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final int EDAD_MINIMA = 18;
 

@@ -1,12 +1,15 @@
 package modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.alquiler.Contrato;
 import modelo.clientes.Cliente;
 import modelo.flota.Vehiculo;
 
-public class Agencia {
+public class Agencia implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final List<Vehiculo> vehiculos = new ArrayList<>();
     private final List<Cliente> clientes = new ArrayList<>();

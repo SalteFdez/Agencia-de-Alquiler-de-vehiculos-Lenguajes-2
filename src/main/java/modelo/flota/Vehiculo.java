@@ -1,9 +1,12 @@
 package modelo.flota;
 
 import excepciones.AlquilerException;
+import java.io.Serializable;
 import modelo.clientes.CategoriaLicencia;
 
-public abstract class Vehiculo {
+public abstract class Vehiculo implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final String patente;
     private final String marca;

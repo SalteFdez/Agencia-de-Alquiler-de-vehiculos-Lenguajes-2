@@ -22,6 +22,8 @@ classDiagram
     namespace vista {
         class Main {
             +main(args: String[])$ void
+            -cargarAgencia(gestor: GestorPersistencia)$ Agencia
+            -guardarAlCerrar(ventana: JFrame, gestor: GestorPersistencia, agencia: Agencia)$ void
         }
         class VentanaPrincipal {
             +VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes, servicioAlquiler: ServicioAlquiler)
@@ -212,6 +214,7 @@ classDiagram
     namespace persistencia {
         class GestorPersistencia {
             -archivo: File
+            +GestorPersistencia(archivo: File)
             +guardar(a: Agencia) void
             +cargar() Agencia
             +existeArchivo() boolean
@@ -220,6 +223,7 @@ classDiagram
 
     namespace modelo {
         class Agencia {
+            -serialVersionUID: long$
             -vehiculos: List~Vehiculo~
             -clientes: List~Cliente~
             -contratos: List~Contrato~
@@ -236,6 +240,7 @@ classDiagram
     namespace flota {
         class Vehiculo {
             <<abstract>>
+            -serialVersionUID: long$
             -patente: String
             -marca: String
             -modelo: String
@@ -293,6 +298,7 @@ classDiagram
 
     namespace clientes {
         class Cliente {
+            -serialVersionUID: long$
             -id: int
             -nombre: String
             -apellido: String
@@ -308,6 +314,7 @@ classDiagram
             +puedeConducir(v: Vehiculo, hasta: LocalDate) boolean
         }
         class LicenciaConducir {
+            -serialVersionUID: long$
             -numero: String
             -categorias: Set~CategoriaLicencia~
             -fechaVencimiento: LocalDate
@@ -326,6 +333,7 @@ classDiagram
 
     namespace alquiler {
         class Contrato {
+            -serialVersionUID: long$
             -numero: int
             -cliente: Cliente
             -vehiculo: Vehiculo
@@ -359,6 +367,7 @@ classDiagram
             +getNombre() String
         }
         class TarifaDiaria {
+            -serialVersionUID: long$
             +calcular(v: Vehiculo, dias: long, km: int) double
             +getNombre() String
         }
@@ -367,6 +376,7 @@ classDiagram
     namespace excepciones {
         class AlquilerException {
             +AlquilerException(mensaje: String)
+            +AlquilerException(mensaje: String, causa: Throwable)
         }
         class VehiculoNoDisponibleException {
             +VehiculoNoDisponibleException(patente: String)

@@ -1,12 +1,15 @@
 package modelo.alquiler;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import modelo.clientes.Cliente;
 import modelo.flota.Vehiculo;
 import modelo.tarifas.Tarifa;
 
-public class Contrato {
+public class Contrato implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int numero;
     private final Cliente cliente;
