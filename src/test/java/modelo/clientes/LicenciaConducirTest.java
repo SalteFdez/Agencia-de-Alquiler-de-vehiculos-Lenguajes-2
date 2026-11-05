@@ -24,4 +24,36 @@ class LicenciaConducirTest {
 
         assertFalse(licencia.estaVigente(LocalDate.of(2027, 3, 16)));
     }
+
+    @Test
+    void habilitaParaUnaCategoriaQueTieneSiLaLicenciaEstaVigenteEnLaFecha() {
+        LicenciaConducir licencia = new LicenciaConducir("L123456",
+                Set.of(CategoriaLicencia.B), LocalDate.of(2027, 3, 15));
+
+        assertTrue(licencia.habilitaPara(CategoriaLicencia.B, LocalDate.of(2027, 1, 10)));
+    }
+
+    @Test
+    void noHabilitaParaUnaCategoriaQueLaLicenciaNoTiene() {
+        LicenciaConducir licencia = new LicenciaConducir("L123456",
+                Set.of(CategoriaLicencia.B), LocalDate.of(2027, 3, 15));
+
+        assertFalse(licencia.habilitaPara(CategoriaLicencia.A, LocalDate.of(2027, 1, 10)));
+    }
+
+    @Test
+    void noHabilitaSiLaLicenciaVenceAntesDeLaFecha() {
+        LicenciaConducir licencia = new LicenciaConducir("L123456",
+                Set.of(CategoriaLicencia.B), LocalDate.of(2027, 3, 15));
+
+        assertFalse(licencia.habilitaPara(CategoriaLicencia.B, LocalDate.of(2027, 3, 16)));
+    }
+
+    @Test
+    void habilitaElMismoDiaDelVencimiento() {
+        LicenciaConducir licencia = new LicenciaConducir("L123456",
+                Set.of(CategoriaLicencia.B), LocalDate.of(2027, 3, 15));
+
+        assertTrue(licencia.habilitaPara(CategoriaLicencia.B, LocalDate.of(2027, 3, 15)));
+    }
 }

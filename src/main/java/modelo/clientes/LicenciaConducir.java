@@ -31,4 +31,8 @@ public class LicenciaConducir {
     public boolean estaVigente(LocalDate fecha) {
         return !fecha.isAfter(fechaVencimiento);
     }
+
+    public boolean habilitaPara(CategoriaLicencia c, LocalDate fecha) {
+        return estaVigente(fecha) && categorias.contains(c);
+    }
 }
