@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #4 terminada (filtrar la flota por tipo y estado).
+Última actualización: historia #5 terminada (dar de baja un vehículo).
 
 ## Diagrama
 
@@ -28,7 +28,9 @@ classDiagram
             -comboEstado: JComboBox~String~
             -tablaFlota: JTable
             -darDeBaja: JButton
-            +VentanaPrincipal(servicio: ServicioFlota)
+            -tablaClientes: JTable
+            -agregarCliente: JButton
+            +VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes)
         }
         class FormularioAuto {
             -servicio: ServicioFlota
@@ -49,6 +51,13 @@ classDiagram
             -traccion4x4: JCheckBox
             +FormularioCamioneta(padre: Frame, servicio: ServicioFlota, alRegistrar: Runnable)
             -guardar() void
+        }
+        class FormularioCliente {
+            -servicio: ServicioClientes
+            -alRegistrar: Runnable
+            +FormularioCliente(padre: Frame, servicio: ServicioClientes, alRegistrar: Runnable)
+            -guardar() void
+            ~fecha(etiqueta: String, campo: JTextField)$ LocalDate
         }
         class PanelDatosVehiculo {
             -patente: JTextField
@@ -76,6 +85,14 @@ classDiagram
             -filtroEstado: EstadoVehiculo
             +setFiltro(tipo: String, estado: EstadoVehiculo) void
             +getVehiculoEn(fila: int) Vehiculo
+            +getRowCount() int
+            +getColumnCount() int
+            +getColumnName(columna: int) String
+            +getValueAt(fila: int, columna: int) Object
+        }
+        class ModeloTablaClientes {
+            -COLUMNAS: String[]$
+            -servicio: ServicioClientes
             +getRowCount() int
             +getColumnCount() int
             +getColumnName(columna: int) String
@@ -123,6 +140,7 @@ classDiagram
             -ultimoIdCliente: int
             -ultimoNroContrato: int
             +getVehiculos() List~Vehiculo~
+            +getClientes() List~Cliente~
             +siguienteIdCliente() int
             +siguienteNroContrato() int
         }
@@ -195,6 +213,7 @@ classDiagram
             -telefono: String
             -licencia: LicenciaConducir
             +EDAD_MINIMA: int = 18$
+            +setId(id: int) void
             +getNombreCompleto() String
             +getEdad() int
             +puedeConducir(v: Vehiculo, hasta: LocalDate) boolean
@@ -312,14 +331,18 @@ classDiagram
     VentanaPrincipal ..> FormularioAuto : abre
     VentanaPrincipal ..> FormularioMoto : abre
     VentanaPrincipal ..> FormularioCamioneta : abre
+    VentanaPrincipal ..> FormularioCliente : abre
+    VentanaPrincipal --> ModeloTablaClientes
     VentanaPrincipal --> ModeloTablaFlota
     FormularioAuto --> ServicioFlota
     FormularioMoto --> ServicioFlota
     FormularioCamioneta --> ServicioFlota
+    FormularioCliente --> ServicioClientes
     FormularioAuto *-- PanelDatosVehiculo
     FormularioMoto *-- PanelDatosVehiculo
     FormularioCamioneta *-- PanelDatosVehiculo
     ModeloTablaFlota --> ServicioFlota
+    ModeloTablaClientes --> ServicioClientes
 ```
 
 ## Estado de implementación
@@ -332,9 +355,9 @@ classDiagram
 | `Moto` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `Camioneta` | `modelo.flota` | Parcial | `getLicenciaRequerida()` | #10 |
 | `Agencia` | `modelo` | Parcial | `clientes`, `contratos`, contadores y sus métodos | #6, #9 |
-| `ServicioFlota` | `servicio` | Parcial | `eliminarVehiculo()` | #5 |
+| `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1 |
-| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `PanelDatosVehiculo`, `ModeloTablaFlota` | `vista` | Hecho para #4 | Crecen con cada historia | #1, #2, #3, #4 |
+| `Main`, `VentanaPrincipal`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `PanelDatosVehiculo`, `ModeloTablaFlota` | `vista` | Hecho para #5 | Crecen con cada historia | #1, #2, #3, #4, #5 |
 | `Cliente`, `LicenciaConducir`, `CategoriaLicencia`, `ServicioClientes` | `modelo.clientes`, `servicio` | Pendiente | Todo | #6, #7, #8 |
 | `Contrato`, `EstadoContrato`, `ServicioAlquiler` | `modelo.alquiler`, `servicio` | Pendiente | Todo | #9, #11, #12, #15 |
 | `Tarifa`, `TarifaDiaria`, `TarifaSemanal`, `TarifaKilometraje` | `modelo.tarifas` | Pendiente | Todo | #9, #13, #14 |
@@ -350,6 +373,9 @@ classDiagram
 - `ServicioFlota.filtrar(tipo, estado)` devuelve los vehículos que cumplen todos los filtros pedidos, en el orden en que se registraron. `tipo` es el texto de `getTipo()` ("Auto", "Moto", "Camioneta") y `null` en `tipo` o en `estado` significa sin filtro.
 - `ModeloTablaFlota` guarda el filtro (`filtroTipo`, `filtroEstado`) y lo cambia con `setFiltro()`, que refresca la tabla. Siempre consulta a `ServicioFlota.filtrar()`, por eso un vehículo nuevo aparece solo si cumple el filtro elegido.
 - `VentanaPrincipal` tiene dos listas desplegables, `comboTipo` y `comboEstado`, con "Todos" como primera opción; "Todos" se traduce a `null` antes de llamar a `setFiltro()`.
+- `ServicioFlota.eliminarVehiculo(v)` quita el vehículo de la flota y lanza `AlquilerException` ("No se puede dar de baja un vehículo alquilado") si `v.getEstado()` es `ALQUILADO`. No distingue si `v` estaba en la flota: la interfaz solo ofrece vehículos de la tabla.
+- `ModeloTablaFlota.getVehiculoEn(fila)` devuelve el vehículo de esa fila según el filtro elegido.
+- En `VentanaPrincipal`, el botón `darDeBaja` está habilitado solo con una fila elegida en `tablaFlota`. Pide confirmación mostrando la patente; si se confirma, llama a `eliminarVehiculo()` y refresca la tabla conservando el filtro, y si hay error lo muestra en un cuadro de diálogo.
 - `Vehiculo.cambiarEstado()` asigna el estado sin validar nada. Las reglas de cuándo se puede alquilar o devolver llegan con #9 y #11.
 - `getFactorTarifa()` es protegido: solo lo usa `getPrecioDiario()`. `Camioneta` devuelve 1,4, o 1,6 si tiene tracción 4x4.
 - El punto de entrada (`Main`) está en el paquete `vista`.
