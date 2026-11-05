@@ -1,6 +1,7 @@
 package modelo.clientes;
 
 import java.time.LocalDate;
+import modelo.flota.Vehiculo;
 import java.time.Period;
 
 public class Cliente {
@@ -60,6 +61,11 @@ public class Cliente {
     @Override
     public String toString() {
         return getNombreCompleto() + " (DNI " + dni + ")";
+    }
+
+    public boolean puedeConducir(Vehiculo v, LocalDate hasta) {
+        return getEdad() >= EDAD_MINIMA
+                && licencia.habilitaPara(v.getLicenciaRequerida(), hasta);
     }
 
     public int getEdad() {
