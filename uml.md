@@ -92,6 +92,7 @@ classDiagram
         }
         class ModeloTablaClientes {
             -COLUMNAS: String[]$
+            -FORMATO_FECHA: DateTimeFormatter$
             -servicio: ServicioClientes
             +getRowCount() int
             +getColumnCount() int
