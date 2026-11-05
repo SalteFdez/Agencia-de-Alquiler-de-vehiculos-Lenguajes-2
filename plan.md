@@ -1,31 +1,47 @@
-# Plan — Historia #8 (borrar al terminar la historia)
+# Plan — Historia #9 (borrar al terminar la historia)
 
 ## Story
-Como operador, quiero eliminar un cliente, para mantener la base al día.
+Como operador, quiero crear un contrato con tarifa diaria para un cliente y un vehículo disponible, para entregarle el vehículo.
 
 ## Acceptance criteria
-- [ ] Dado que elijo un cliente en la lista de clientes, cuando presiono "Eliminar cliente" y confirmo, entonces el cliente desaparece de la lista y ya no forma parte de la base.
-- [ ] Dado que elijo un cliente y presiono "Eliminar cliente", cuando cancelo la confirmación, entonces el cliente sigue en la lista sin cambios.
-- [ ] Dado que hay un texto de búsqueda escrito, cuando elimino uno de los clientes que se ven, entonces se elimina ese cliente (no otro de la lista completa) y la lista sigue filtrada con la misma búsqueda.
+- [ ] Dado que hay clientes y vehículos DISPONIBLE, cuando en la pestaña Contratos presiono "Nuevo contrato", elijo un cliente, un vehículo (solo se ofrecen los DISPONIBLE) y una fecha de fin prevista, entonces el formulario muestra el total estimado (precio diario del vehículo × días); al guardar, el contrato aparece en la lista con su número, cliente, patente, fecha de inicio (hoy), fecha de fin prevista, tarifa "Diaria", estado ACTIVO y total, y el vehículo pasa a ALQUILADO en la pestaña Flota.
+- [ ] Dado que no elijo cliente o vehículo, o la fecha de fin prevista está vacía, no tiene el formato dd/mm/aaaa o no es posterior a hoy, cuando guardo, entonces veo un mensaje que indica el problema, el contrato no se crea y el vehículo sigue DISPONIBLE.
+- [ ] Dado que un cliente tiene un contrato ACTIVO, cuando intento eliminarlo desde la pestaña Clientes, entonces veo un mensaje que indica que no se puede eliminar un cliente con un contrato activo y el cliente sigue en la lista.
 
 ## Plan
-- Servicio: una operación que quita un cliente de la base.
-- Tabla: una forma de obtener el cliente de una fila según la búsqueda escrita.
-- Interfaz: un botón "Eliminar cliente" en la pestaña Clientes, habilitado solo cuando hay un cliente elegido en la tabla. Pide confirmación mostrando el nombre completo y el DNI; si se confirma, llama al servicio y refresca la tabla conservando la búsqueda.
-- Antes de empezar: el refactor de `VentanaPrincipal` tiene que estar terminado y reflejado en `uml.md`. El botón va en la clase que arme la pestaña Clientes después del refactor.
+- Modelo: la tarifa como interfaz con una única implementación, la diaria; el contrato con su número, cliente, vehículo, tarifa, fechas, km inicial y estado; y la agencia guarda también los contratos y su contador.
+- Servicio de alquiler: crea el contrato validando la fecha de fin y que el vehículo esté disponible, le asigna número, deja el vehículo ALQUILADO y lo lista. El servicio de clientes pasa a rechazar la eliminación de un cliente con un contrato activo.
+- Interfaz: una pestaña Contratos con su tabla y un botón "Nuevo contrato" que abre un formulario con una lista de clientes, una lista de vehículos disponibles, la fecha de fin prevista y el total estimado, que se recalcula al cambiar el vehículo o la fecha.
+- Al crear un contrato se refrescan la tabla de contratos y la de la flota (el vehículo cambió de estado). Los errores se muestran en un mensaje.
 - Al terminar: comparar los nombres del código con `uml.md` y actualizarlo (diagrama, tabla de estado y notas).
 
 ## Nombres obligatorios (según `uml.md`)
-- Servicio: `ServicioClientes.eliminarCliente(c: Cliente): void`, declarado con `throws AlquilerException` para que en #9 pueda rechazar a un cliente con un contrato activo sin cambiar su firma.
-- Tabla: `ModeloTablaClientes.getClienteEn(fila: int): Cliente` devuelve el cliente de esa fila según `filtroTexto`.
-- Vista: el botón se llama `eliminarClienteBoton` y vive en la clase que arma la pestaña Clientes (hoy `VentanaPrincipal`; después del refactor, la que corresponda según `uml.md`). La tabla conserva el nombre `tablaClientes`.
-- Mensajes: confirmación "¿Eliminar al cliente <nombre completo> (DNI <dni>)?" con título "Eliminar cliente"; si el servicio lanza una excepción, se muestra en un cuadro de diálogo con título "No se pudo eliminar el cliente".
-- `getClienteEn()` y `eliminarClienteBoton` son nombres nuevos: agregarlos a `uml.md` al empezar la historia. Si hace falta otro nombre que no está en esta lista ni en `uml.md`, agregarlo primero a `uml.md`.
+- `modelo.tarifas`:
+    - `Tarifa` (interfaz): `calcular(v: Vehiculo, dias: long, km: int): double` y `getNombre(): String`.
+    - `TarifaDiaria`: `calcular()` devuelve `v.getPrecioDiario() * dias` (ignora `km`); `getNombre()` devuelve `"Diaria"`.
+- `modelo.alquiler`:
+    - `EstadoContrato` (enum): `ACTIVO`, `FINALIZADO`.
+    - `Contrato`: atributos `numero: int`, `cliente: Cliente`, `vehiculo: Vehiculo`, `tarifa: Tarifa`, `fechaInicio: LocalDate`, `fechaFinPrevista: LocalDate`, `kmInicial: int`, `estado: EstadoContrato`. Constructor `Contrato(cliente, vehiculo, tarifa, fechaInicio, fechaFinPrevista)`: toma `kmInicial` de `vehiculo.getKilometraje()` y queda `ACTIVO`. `setNumero(numero: int): void` (lo usa solo el servicio). `getDias(): long` (días entre `fechaInicio` y `fechaFinPrevista`) y `calcularTotal(): double` (`tarifa.calcular(vehiculo, getDias(), 0)`), más los getters de cada atributo. `fechaDevolucion` y `kmFinal` llegan con #11.
+- `Agencia`: `contratos: List<Contrato>`, `ultimoNroContrato: int`, `getContratos(): List<Contrato>` y `siguienteNroContrato(): int` (devuelve 1, 2, 3…).
+- `Vehiculo.estaDisponible(): boolean` (estado `DISPONIBLE`).
+- `excepciones.VehiculoNoDisponibleException extends AlquilerException`, mensaje "El vehículo <patente> no está disponible".
+- `ServicioAlquiler(agencia: Agencia)`:
+    - `crearContrato(c: Cliente, v: Vehiculo, t: Tarifa, fin: LocalDate): Contrato` (lanza `AlquilerException`): si `fin` no es posterior a hoy, "La fecha de fin prevista debe ser posterior a hoy"; si `!v.estaDisponible()`, `VehiculoNoDisponibleException`. Si todo está bien, asigna número, llama a `v.cambiarEstado(ALQUILADO)` y agrega el contrato.
+    - `listarContratos(estado: EstadoContrato): List<Contrato>`; `null` devuelve todos, en el orden en que se crearon.
+- `ServicioClientes` pasa a recibir la agencia como hasta ahora y `eliminarCliente()` lanza `AlquilerException` con "No se puede eliminar un cliente con un contrato activo" si hay un contrato `ACTIVO` de ese cliente en `agencia.getContratos()`.
+- Vista:
+    - `ModeloTablaContratos` (en `vista`), columnas "Nº", "Cliente", "Vehículo", "Inicio", "Fin prevista", "Tarifa", "Estado", "Total". "Cliente" muestra el nombre completo, "Vehículo" la patente y las fechas en dd/mm/aaaa.
+    - `FormularioContrato(padre, servicioAlquiler, servicioClientes, servicioFlota, alCrear: Runnable)` con `comboCliente: JComboBox<Cliente>`, `comboVehiculo: JComboBox<Vehiculo>` (solo los `DISPONIBLE`, con `servicioFlota.filtrar(null, DISPONIBLE)`), `campoFechaFin: JTextField` y `etiquetaTotal: JLabel`. Lee la fecha con `FormularioCliente.fecha()`. Mensajes si falta elegir: "Hay que elegir un cliente" y "Hay que elegir un vehículo disponible".
+    - Para mostrar los elementos de las listas, `Cliente.toString()` devuelve "<nombre completo> (DNI <dni>)" y `Vehiculo.toString()` devuelve "<patente> - <marca> <modelo>".
+    - `VentanaPrincipal(servicioFlota, servicioClientes, servicioAlquiler)` agrega la pestaña "Contratos" con `tablaContratos`, el botón `nuevoContrato` y el método privado `crearPestaniaContratos()`. `Main` crea los tres servicios con la misma `Agencia`.
+- Todos estos nombres que todavía no están en `uml.md` (`setNumero()`, `toString()`, `VehiculoNoDisponibleException` con su mensaje, `ModeloTablaContratos`, `FormularioContrato` y sus campos, `tablaContratos`, `nuevoContrato`, `crearPestaniaContratos()` y los constructores nuevos) se agregan a `uml.md` al empezar la historia. Si hace falta otro nombre, agregarlo primero a `uml.md`.
 
 ## Out of scope
-- Impedir eliminar un cliente con un contrato activo: todavía no hay contratos; esa regla se agrega en #9, donde `eliminarCliente()` empieza a lanzar `AlquilerException`.
-- Eliminar varios clientes a la vez, deshacer una eliminación o ver clientes eliminados.
-- Renumerar los clientes: los números ya asignados no se reutilizan.
+- Validar que el cliente pueda manejar el vehículo (edad, licencia vigente y categoría): es la historia #10. Por ahora cualquier cliente puede alquilar.
+- Registrar la devolución (#11) y filtrar contratos por estado (#15).
+- Tarifa semanal, tarifa por kilometraje y recargo por atraso: fuera de alcance.
+- Elegir una fecha de inicio distinta de hoy (reservas a futuro).
+- Editar o cancelar un contrato.
 
 ## Suggestions (your call)
-- Ninguna.
+- `VentanaPrincipal` ya tiene 169 líneas y esta historia le suma una tercera pestaña. Antes de empezar se puede extraer cada pestaña a su propia clase (`PanelFlota`, `PanelClientes`, `PanelContratos`), como refactor aparte y con los tests en verde. Si lo hacen, el plan sigue igual cambiando solo dónde viven `tablaContratos`, `nuevoContrato` y `crearPestaniaContratos()`, y hay que reflejarlo primero en `uml.md`.

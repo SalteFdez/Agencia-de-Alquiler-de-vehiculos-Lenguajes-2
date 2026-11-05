@@ -16,14 +16,13 @@ Proyecto final integrador de Lenguajes 2 (Ingeniería en Informática): sistema 
 
 - Vehículos: Auto, Moto y Camioneta heredan de `Vehiculo` (abstracta). Estados: DISPONIBLE o ALQUILADO.
 - Factor de tarifa por tipo: Auto 1,0 (+0,15 si es automático); Moto 0,6; Camioneta 1,4 (+0,2 si es 4x4). Precio diario = precio base × factor.
-- Tarifas (interfaz `Tarifa`, patrón Strategy): diaria, semanal (descuento sobre semanas completas, desde 7 días) y por kilometraje (km libres por día + precio por km excedente).
+- Tarifas (interfaz `Tarifa`, patrón Strategy): por ahora solo la diaria (precio diario × días). La tarifa semanal y la de kilometraje quedan fuera de alcance.
 - Conductor habilitado: el propio cliente, con 18 años o más y licencia vigente hasta la fecha de fin prevista, con categoría A para motos o B para autos y camionetas.
-- Atraso en la devolución: recargo = días de atraso × precio diario × 1,5.
-- Contratos: ACTIVO o FINALIZADO. Total = costo de la tarifa + recargo por atraso.
+- Contratos: ACTIVO o FINALIZADO. Total = costo de la tarifa. No hay recargo por atraso (fuera de alcance).
 
 ## Referencias
 
-- Historias de usuario: `backlog.md`.
+- Historias de usuario: `backlog.md` (los números #N son fijos; las historias #12, #13 y #14 se sacaron del alcance).
 - Diagrama de clases UML: `uml.md` (fuente de verdad en texto, con el estado de cada clase). `Alquiler de autos.drawio.png` es la versión visual y puede estar desactualizada.
 
 ## Forma de trabajo

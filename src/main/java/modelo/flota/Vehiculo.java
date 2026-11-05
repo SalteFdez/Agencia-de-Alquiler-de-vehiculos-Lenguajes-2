@@ -57,6 +57,10 @@ public abstract class Vehiculo {
         return estado;
     }
 
+    public boolean estaDisponible() {
+        return estado == EstadoVehiculo.DISPONIBLE;
+    }
+
     public void cambiarEstado(EstadoVehiculo e) {
         this.estado = e;
     }
