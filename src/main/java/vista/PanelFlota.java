@@ -27,6 +27,8 @@ public class PanelFlota extends JPanel {
             new JComboBox<>(new String[] {TODOS, "DISPONIBLE", "ALQUILADO"});
     private final JTable tablaFlota;
     private final JButton darDeBaja = new JButton("Dar de baja");
+    private String patenteElegida;
+    private boolean refrescando;
 
     public PanelFlota(Frame padre, ServicioFlota servicio) {
         super(new BorderLayout());
@@ -52,8 +54,13 @@ public class PanelFlota extends JPanel {
         comboTipo.addActionListener(e -> aplicarFiltro.run());
         comboEstado.addActionListener(e -> aplicarFiltro.run());
         darDeBaja.setEnabled(false);
-        tablaFlota.getSelectionModel().addListSelectionListener(e ->
-                darDeBaja.setEnabled(tablaFlota.getSelectedRow() >= 0));
+        tablaFlota.getSelectionModel().addListSelectionListener(e -> {
+            darDeBaja.setEnabled(tablaFlota.getSelectedRow() >= 0);
+            if (!refrescando) {
+                patenteElegida = tablaFlota.getSelectedRow() >= 0
+                        ? modelo.getVehiculoEn(tablaFlota.getSelectedRow()).getPatente() : null;
+            }
+        });
         darDeBaja.addActionListener(e -> darDeBajaElegido());
 
         JPanel filtros = new JPanel();
@@ -73,7 +80,15 @@ public class PanelFlota extends JPanel {
     }
 
     public void refrescar() {
+        refrescando = true;
         modelo.fireTableDataChanged();
+        for (int fila = 0; fila < modelo.getRowCount(); fila++) {
+            if (modelo.getVehiculoEn(fila).getPatente().equals(patenteElegida)) {
+                tablaFlota.setRowSelectionInterval(fila, fila);
+                break;
+            }
+        }
+        refrescando = false;
     }
 
     private void darDeBajaElegido() {

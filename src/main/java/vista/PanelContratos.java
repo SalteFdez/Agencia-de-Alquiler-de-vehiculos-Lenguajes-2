@@ -28,6 +28,8 @@ public class PanelContratos extends JPanel {
     private final JTable tablaContratos;
     private final JButton nuevoContrato = new JButton("Nuevo contrato");
     private final JButton devolucionBoton = new JButton("Registrar devolución");
+    private Integer numeroElegido;
+    private boolean refrescando;
 
     public PanelContratos(Frame padre, ServicioAlquiler servicioAlquiler,
                           ServicioClientes servicioClientes, ServicioFlota servicioFlota,
@@ -55,8 +57,13 @@ public class PanelContratos extends JPanel {
                         alCambiarContratos).setVisible(true));
 
         devolucionBoton.setEnabled(false);
-        tablaContratos.getSelectionModel().addListSelectionListener(e ->
-                devolucionBoton.setEnabled(tablaContratos.getSelectedRow() >= 0));
+        tablaContratos.getSelectionModel().addListSelectionListener(e -> {
+            devolucionBoton.setEnabled(tablaContratos.getSelectedRow() >= 0);
+            if (!refrescando) {
+                numeroElegido = tablaContratos.getSelectedRow() >= 0
+                        ? modelo.getContratoEn(tablaContratos.getSelectedRow()).getNumero() : null;
+            }
+        });
         devolucionBoton.addActionListener(e ->
                 new FormularioDevolucion(padre, servicioAlquiler,
                         modelo.getContratoEn(tablaContratos.getSelectedRow()),
@@ -73,5 +80,17 @@ public class PanelContratos extends JPanel {
         add(filtros, BorderLayout.NORTH);
         add(new JScrollPane(tablaContratos), BorderLayout.CENTER);
         add(botones, BorderLayout.SOUTH);
+    }
+
+    public void refrescar() {
+        refrescando = true;
+        modelo.fireTableDataChanged();
+        for (int fila = 0; fila < modelo.getRowCount(); fila++) {
+            if (Integer.valueOf(modelo.getContratoEn(fila).getNumero()).equals(numeroElegido)) {
+                tablaContratos.setRowSelectionInterval(fila, fila);
+                break;
+            }
+        }
+        refrescando = false;
     }
 }

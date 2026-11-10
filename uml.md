@@ -37,6 +37,8 @@ classDiagram
             -comboEstado: JComboBox~String~
             -tablaFlota: JTable
             -darDeBaja: JButton
+            -patenteElegida: String
+            -refrescando: boolean
             +PanelFlota(padre: Frame, servicio: ServicioFlota)
             +refrescar() void
             -darDeBajaElegido() void
@@ -49,7 +51,10 @@ classDiagram
             -tablaClientes: JTable
             -agregarCliente: JButton
             -eliminarClienteBoton: JButton
+            -dniElegido: String
+            -refrescando: boolean
             +PanelClientes(padre: Frame, servicio: ServicioClientes)
+            +refrescar() void
             ~alCambiarElTexto(campo: JTextField, accion: Runnable)$ void
             -eliminarClienteElegido() void
         }
@@ -65,7 +70,10 @@ classDiagram
             -tablaContratos: JTable
             -nuevoContrato: JButton
             -devolucionBoton: JButton
+            -numeroElegido: Integer
+            -refrescando: boolean
             +PanelContratos(padre: Frame, servicioAlquiler: ServicioAlquiler, servicioClientes: ServicioClientes, servicioFlota: ServicioFlota, alCambiarFlota: Runnable)
+            +refrescar() void
         }
         class FormularioContrato {
             -SIN_TOTAL: String$

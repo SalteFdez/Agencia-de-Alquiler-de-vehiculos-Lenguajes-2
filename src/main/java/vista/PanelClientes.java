@@ -24,6 +24,8 @@ public class PanelClientes extends JPanel {
     private final JTable tablaClientes;
     private final JButton agregarCliente = new JButton("Agregar cliente");
     private final JButton eliminarClienteBoton = new JButton("Eliminar cliente");
+    private String dniElegido;
+    private boolean refrescando;
 
     public PanelClientes(Frame padre, ServicioClientes servicio) {
         super(new BorderLayout());
@@ -36,8 +38,13 @@ public class PanelClientes extends JPanel {
                 new FormularioCliente(padre, servicio, modelo::fireTableDataChanged).setVisible(true));
         alCambiarElTexto(campoBusqueda, () -> modelo.setFiltro(campoBusqueda.getText()));
         eliminarClienteBoton.setEnabled(false);
-        tablaClientes.getSelectionModel().addListSelectionListener(e ->
-                eliminarClienteBoton.setEnabled(tablaClientes.getSelectedRow() >= 0));
+        tablaClientes.getSelectionModel().addListSelectionListener(e -> {
+            eliminarClienteBoton.setEnabled(tablaClientes.getSelectedRow() >= 0);
+            if (!refrescando) {
+                dniElegido = tablaClientes.getSelectedRow() >= 0
+                        ? modelo.getClienteEn(tablaClientes.getSelectedRow()).getDni() : null;
+            }
+        });
         eliminarClienteBoton.addActionListener(e -> eliminarClienteElegido());
 
         JPanel busqueda = new JPanel();
@@ -50,6 +57,18 @@ public class PanelClientes extends JPanel {
         add(busqueda, BorderLayout.NORTH);
         add(new JScrollPane(tablaClientes), BorderLayout.CENTER);
         add(botones, BorderLayout.SOUTH);
+    }
+
+    public void refrescar() {
+        refrescando = true;
+        modelo.fireTableDataChanged();
+        for (int fila = 0; fila < modelo.getRowCount(); fila++) {
+            if (modelo.getClienteEn(fila).getDni().equals(dniElegido)) {
+                tablaClientes.setRowSelectionInterval(fila, fila);
+                break;
+            }
+        }
+        refrescando = false;
     }
 
     private void eliminarClienteElegido() {
