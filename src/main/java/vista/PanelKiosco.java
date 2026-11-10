@@ -24,6 +24,8 @@ public class PanelKiosco extends JPanel {
         for (Vehiculo vehiculo : servicio.filtrar(null, EstadoVehiculo.DISPONIBLE)) {
             grilla.add(new TarjetaVehiculo(vehiculo, fotos.buscarFoto(vehiculo.getPatente())));
         }
-        add(new JScrollPane(grilla), BorderLayout.CENTER);
+        JPanel arriba = new JPanel(new BorderLayout());
+        arriba.add(grilla, BorderLayout.NORTH);
+        add(new JScrollPane(arriba), BorderLayout.CENTER);
     }
 }

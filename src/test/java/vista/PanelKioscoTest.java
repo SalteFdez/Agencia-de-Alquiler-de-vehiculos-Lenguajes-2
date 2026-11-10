@@ -1,6 +1,7 @@
 package vista;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import modelo.Agencia;
 import modelo.flota.Auto;
 import modelo.flota.EstadoVehiculo;
@@ -95,6 +97,29 @@ class PanelKioscoTest {
         assertEquals(320, imagenAuto.getIcon().getIconWidth());
         assertEquals("", imagenAuto.getText());
         assertEquals("Moto", imagenMoto.getText());
+    }
+
+    @Test
+    void conPocosVehiculosLasTarjetasConservanSuAltoNaturalYQuedanArriba() {
+        Agencia agencia = new Agencia();
+        agencia.getVehiculos().add(cronos());
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()));
+
+        panel.setSize(1280, 800);
+        acomodar(panel);
+
+        TarjetaVehiculo tarjeta = tarjetas(panel).get(0);
+        assertEquals(tarjeta.getPreferredSize().height, tarjeta.getHeight());
+        assertTrue(SwingUtilities.convertPoint(tarjeta, 0, 0, panel).y < 100);
+    }
+
+    private static void acomodar(Container contenedor) {
+        contenedor.doLayout();
+        for (Component hijo : contenedor.getComponents()) {
+            if (hijo instanceof Container) {
+                acomodar((Container) hijo);
+            }
+        }
     }
 
     private static JLabel etiquetaImagen(TarjetaVehiculo tarjeta) {
