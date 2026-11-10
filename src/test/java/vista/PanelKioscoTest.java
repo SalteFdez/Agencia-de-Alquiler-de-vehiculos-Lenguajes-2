@@ -1,6 +1,7 @@
 package vista;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -150,5 +151,115 @@ class PanelKioscoTest {
 
         assertEquals(1, elegidos.size());
         assertSame(honda, elegidos.get(0));
+    }
+
+    private static String modeloDe(TarjetaVehiculo tarjeta) {
+        for (Component hijo : tarjeta.getComponents()) {
+            if (hijo instanceof JLabel && "marcaModelo".equals(hijo.getName())) {
+                return ((JLabel) hijo).getText();
+            }
+        }
+        return null;
+    }
+
+    private static Auto ka() {
+        return new Auto("ZZ999ZZ", "Ford", "Ka", "Negro", 2019, 40000, 9000.0, 4, 5, TipoCaja.MANUAL);
+    }
+
+    @Test
+    void actualizarSacaLaTarjetaDelVehiculoQueDejoDeEstarDisponibleYDevuelveTrue() {
+        Agencia agencia = new Agencia();
+        Auto cronos = cronos();
+        Moto honda = honda();
+        agencia.getVehiculos().add(cronos);
+        agencia.getVehiculos().add(honda);
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia),
+                new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
+
+        boolean cambio = panel.actualizar(List.of(honda));
+
+        assertTrue(cambio);
+        List<TarjetaVehiculo> mostradas = tarjetas(panel);
+        assertEquals(1, mostradas.size());
+        assertEquals("Honda CB125", modeloDe(mostradas.get(0)));
+    }
+
+    @Test
+    void actualizarAgregaLaTarjetaDeUnVehiculoNuevoEnElOrdenDeLaListaYDevuelveTrue() {
+        Agencia agencia = new Agencia();
+        Auto cronos = cronos();
+        Moto honda = honda();
+        agencia.getVehiculos().add(cronos);
+        agencia.getVehiculos().add(honda);
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia),
+                new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
+
+        boolean cambio = panel.actualizar(List.of(ka(), cronos, honda));
+
+        assertTrue(cambio);
+        List<TarjetaVehiculo> mostradas = tarjetas(panel);
+        assertEquals(3, mostradas.size());
+        assertEquals("Ford Ka", modeloDe(mostradas.get(0)));
+        assertEquals("Fiat Cronos", modeloDe(mostradas.get(1)));
+        assertEquals("Honda CB125", modeloDe(mostradas.get(2)));
+    }
+
+    @Test
+    void sinCambiosActualizarDevuelveFalseYLasTarjetasSonLasMismasInstancias() {
+        Agencia agencia = new Agencia();
+        Auto cronos = cronos();
+        Moto honda = honda();
+        agencia.getVehiculos().add(cronos);
+        agencia.getVehiculos().add(honda);
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia),
+                new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
+        List<TarjetaVehiculo> antes = tarjetas(panel);
+
+        boolean cambio = panel.actualizar(List.of(cronos, honda));
+
+        assertFalse(cambio);
+        List<TarjetaVehiculo> despues = tarjetas(panel);
+        assertEquals(2, despues.size());
+        assertSame(antes.get(0), despues.get(0));
+        assertSame(antes.get(1), despues.get(1));
+    }
+
+    @Test
+    void cuandoLaListaCambiaLasTarjetasQueSiguenSeReutilizanYLaDeUnVehiculoQueVuelveTambien() {
+        Agencia agencia = new Agencia();
+        Auto cronos = cronos();
+        Moto honda = honda();
+        agencia.getVehiculos().add(cronos);
+        agencia.getVehiculos().add(honda);
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia),
+                new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
+        List<TarjetaVehiculo> inicial = tarjetas(panel);
+
+        panel.actualizar(List.of(honda, ka()));
+        List<TarjetaVehiculo> trasElCambio = tarjetas(panel);
+        assertSame(inicial.get(1), trasElCambio.get(0));
+
+        panel.actualizar(List.of(cronos, honda));
+        List<TarjetaVehiculo> trasLaVuelta = tarjetas(panel);
+        assertSame(inicial.get(0), trasLaVuelta.get(0));
+        assertSame(inicial.get(1), trasLaVuelta.get(1));
+    }
+
+    @Test
+    void tocarLaTarjetaDeUnVehiculoAgregadoPorActualizarAvisaConEseVehiculo() {
+        Agencia agencia = new Agencia();
+        agencia.getVehiculos().add(cronos());
+        List<Vehiculo> elegidos = new ArrayList<>();
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia),
+                new CarpetaFotos(carpeta.toFile()), elegidos::add);
+        Vehiculo ka = ka();
+
+        panel.actualizar(List.of(ka));
+        TarjetaVehiculo nueva = tarjetas(panel).get(0);
+        nueva.dispatchEvent(new MouseEvent(nueva, MouseEvent.MOUSE_PRESSED,
+                System.currentTimeMillis(), 0, 10, 10, 1, false));
+
+        assertEquals(1, elegidos.size());
+        assertSame(ka, elegidos.get(0));
     }
 }

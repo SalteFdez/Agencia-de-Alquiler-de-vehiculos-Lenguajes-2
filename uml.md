@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #19 terminada (el operario ve los contratos del kiosco sin cerrar y sus cambios no los pisan: guardado inmediato sobre datos frescos con `ServicioOperario`, recarga cada 3 s, guardado atómico).
+Última actualización: historia #20 terminada (el kiosco se actualiza solo cada 3 s: `ServicioKiosco.disponibles()`, `PanelKiosco.actualizar` reutiliza tarjetas, intervalo compartido `Recarga.INTERVALO_MS`).
 
 ## Diagrama
 
@@ -24,8 +24,10 @@ classDiagram
             +main(args: String[])$ void
             ~cargarAgencia(gestor: GestorPersistencia)$ Agencia
         }
+        class Recarga {
+            ~INTERVALO_MS: int$
+        }
         class VentanaPrincipal {
-            -INTERVALO_MS: int$
             -temporizador: Timer
             +VentanaPrincipal(servicioFlota: ServicioFlota, servicioClientes: ServicioClientes, servicioAlquiler: ServicioAlquiler, servicioOperario: ServicioOperario)
         }
@@ -196,10 +198,11 @@ classDiagram
             +main(args: String[])$ void
         }
         class VentanaKiosco {
-            -gestor: GestorPersistencia
-            -fotos: CarpetaFotos
+            -servicioKiosco: ServicioKiosco
+            -panel: PanelKiosco
+            -temporizador: Timer
             +VentanaKiosco(gestor: GestorPersistencia, fotos: CarpetaFotos)
-            -mostrarVehiculos() void
+            -actualizar() void
         }
         class FormularioAlquiler {
             -FUENTE: Font$
@@ -225,7 +228,13 @@ classDiagram
         class PanelKiosco {
             -servicio: ServicioFlota
             -fotos: CarpetaFotos
+            -alElegir: Consumer~Vehiculo~
+            -grilla: JPanel
+            -tarjetas: Map~String, TarjetaVehiculo~
+            -patentesMostradas: List~String~
             +PanelKiosco(servicio: ServicioFlota, fotos: CarpetaFotos, alElegir: Consumer~Vehiculo~)
+            +actualizar(disponibles: List~Vehiculo~) boolean
+            -crearTarjeta(vehiculo: Vehiculo) TarjetaVehiculo
         }
         class TarjetaVehiculo {
             -ANCHO_FOTO: int$
@@ -275,6 +284,7 @@ classDiagram
             -gestor: GestorPersistencia
             +ServicioKiosco(gestor: GestorPersistencia)
             +alquilar(dni: String, patente: String, fin: LocalDate) Contrato
+            +disponibles() List~Vehiculo~
         }
         class ServicioOperario {
             -gestor: GestorPersistencia
@@ -548,7 +558,9 @@ classDiagram
     MainKiosco ..> GestorPersistencia : crea
     VentanaKiosco ..> Main : carga con cargarAgencia
     VentanaKiosco --> PanelKiosco
-    VentanaKiosco --> GestorPersistencia
+    VentanaKiosco --> ServicioKiosco
+    VentanaKiosco ..> Recarga : usa INTERVALO_MS
+    VentanaPrincipal ..> Recarga : usa INTERVALO_MS
     VentanaKiosco --> FormularioAlquiler
     FormularioAlquiler --> ServicioAlquiler
     FormularioAlquiler --> ServicioKiosco
@@ -570,7 +582,7 @@ classDiagram
 | `Camioneta` | `modelo.flota` | Hecho | — | #3, #10 |
 | `Agencia` | `modelo` | Hecho | — | #6, #9, #16, #19 |
 | `Formatos` | `modelo` | Hecho | — | refactor |
-| `MainKiosco`, `VentanaKiosco`, `PanelKiosco`, `TarjetaVehiculo`, `CarpetaFotos`, `FormularioAlquiler`, `MensajeKiosco` | `vista` | Parcial | Actualizarse solo (#20) | #17, #18, #20 |
+| `MainKiosco`, `VentanaKiosco`, `PanelKiosco`, `TarjetaVehiculo`, `CarpetaFotos`, `FormularioAlquiler`, `MensajeKiosco`, `Recarga` | `vista` | Hecho para #20 | Crecen con cada historia | #17, #18, #20 |
 | `ServicioKiosco` | `servicio` | Hecho | Que el kiosco se actualice solo (#20) | #18, #19 |
 | `ServicioOperario` | `servicio` | Hecho | — | #19 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
@@ -633,8 +645,8 @@ classDiagram
 - `Agencia`, `Vehiculo` (y por herencia `Auto`, `Moto` y `Camioneta`), `Cliente`, `LicenciaConducir`, `Contrato` y `TarifaDiaria` implementan `java.io.Serializable` con `serialVersionUID = 1L`; los enums ya lo son. `Tarifa` es una interfaz sin `Serializable`: una tarifa nueva tiene que implementarlo para poder guardarse. Si el modelo cambia, hay que borrar `agencia.dat` (no hay migración de versiones).
 - `GestorPersistencia(archivo)` guarda la agencia completa con `ObjectOutputStream` (se reemplaza el archivo) y la carga con `ObjectInputStream`; como se serializa todo el grafo junto, los contratos siguen apuntando a los mismos `Vehiculo` y `Cliente` de las listas y los contadores (`ultimoIdCliente`, `ultimoNroContrato`) se conservan. `guardar()` y `cargar()` lanzan `AlquilerException` ("No se pudieron guardar los datos" / "No se pudieron cargar los datos") con el error original como causa, usando el constructor `AlquilerException(mensaje, causa)`. `cargar()` no contempla un archivo que contenga otra clase (`ClassCastException`). `guardar()` escribe primero `<archivo>.tmp` en la misma carpeta y después lo mueve sobre el archivo de datos de forma atómica (`ATOMIC_MOVE`), para que la otra aplicación nunca lea un archivo a medio escribir; si falla, borra el temporal y deja el archivo anterior intacto.
 - `Main` usa `new File("agencia.dat")`, en la carpeta desde la que se ejecuta la aplicación. `cargarAgencia(gestor)` (del paquete) carga el archivo si existe; sin archivo arranca con una agencia vacía y sin mensajes, y si la carga falla muestra el diálogo "No se pudieron cargar los datos" y arranca vacía. La aplicación del operario ya no guarda al cerrar: cada cambio se guarda en el momento a través de `ServicioOperario` (cerrar la ventana usa `EXIT_ON_CLOSE`), así que cerrarla no pisa lo que guardó el kiosco. Si el archivo está dañado al abrir, la aplicación arranca vacía pero el primer cambio falla con "No se pudieron cargar los datos" y no pisa el archivo.
-- El kiosco es una aplicación aparte de la del operario: se lanza con `ejecutar-kiosco.sh` (`vista.MainKiosco`) y trabaja sobre el mismo `agencia.dat`: `VentanaKiosco` lo carga con `Main.cargarAgencia()` (del paquete; mismo comportamiento ante un archivo ausente o dañado) al abrir y cada vez que rearma la grilla, y guarda solo al confirmar un alquiler, a través de `ServicioKiosco`. El operario tiene la aplicación abierta al mismo tiempo: sus cambios se aplican sobre datos recién leídos (`ServicioOperario`), así que no pisan los del kiosco. El kiosco, en cambio, no se actualiza solo (#20).
-- `VentanaKiosco` es un `JFrame` maximizado que cierra con `EXIT_ON_CLOSE` y contiene un `PanelKiosco`. `PanelKiosco` pide a `ServicioFlota.filtrar(null, DISPONIBLE)` los vehículos y arma una grilla de 3 columnas (pegada arriba, para que las tarjetas conserven su alto natural) dentro de un `JScrollPane`, con una `TarjetaVehiculo` por vehículo en el orden de la flota; al tocar una tarjeta (`mousePressed`) avisa con su vehículo al `Consumer` `alElegir`.
+- El kiosco es una aplicación aparte de la del operario: se lanza con `ejecutar-kiosco.sh` (`vista.MainKiosco`) y trabaja sobre el mismo `agencia.dat`: `VentanaKiosco` lo carga con `Main.cargarAgencia()` (del paquete; mismo comportamiento ante un archivo ausente o dañado) solo al abrir (para armar el panel y calcular el total estimado) y guarda solo al confirmar un alquiler, a través de `ServicioKiosco`. El operario tiene la aplicación abierta al mismo tiempo: sus cambios se aplican sobre datos recién leídos (`ServicioOperario`), así que no pisan los del kiosco. El kiosco, a su vez, se actualiza solo: un `Timer` de `VentanaKiosco` pide cada `Recarga.INTERVALO_MS` (3000 ms, el mismo que usa `VentanaPrincipal`) los vehículos disponibles con `ServicioKiosco.disponibles()` (que lee el archivo en cada llamada) y se los pasa a `PanelKiosco.actualizar`; si la lectura falla (archivo ausente o dañado) se ignora, se conserva lo que se ve y se reintenta.
+- `VentanaKiosco` es un `JFrame` maximizado que cierra con `EXIT_ON_CLOSE` y contiene un `PanelKiosco`. `PanelKiosco` pide a `ServicioFlota.filtrar(null, DISPONIBLE)` los vehículos y arma una grilla de 3 columnas (pegada arriba, para que las tarjetas conserven su alto natural) dentro de un `JScrollPane`, con una `TarjetaVehiculo` por vehículo en el orden de la flota; al tocar una tarjeta (`mousePressed`) avisa con su vehículo al `Consumer` `alElegir`. `PanelKiosco.actualizar(disponibles)` compara las patentes con las mostradas: si son las mismas devuelve `false` y no toca nada (sin parpadeo ni salto del scroll); si cambian, rearma la grilla en el orden recibido, reutilizando por patente las tarjetas ya creadas (`tarjetas`, así no se vuelve a leer la foto) y devuelve `true`. Si el cliente tiene abierto el formulario de un vehículo que el operario acaba de alquilar, la tarjeta desaparece de la grilla y al confirmar `ServicioKiosco.alquilar` responde que no está disponible. `Recarga` es una clase de constantes del paquete (sin instancias).
 - `ServicioKiosco.alquilar(dni, patente, fin)` no guarda estado: cada vez valida que el DNI no esté vacío ("Hay que escribir el DNI"), vuelve a cargar `agencia.dat`, busca el cliente con `buscarPorDni` ("No hay ningún cliente registrado con el DNI <dni>") y el vehículo con `buscarPorPatente` (si ya no está: "El vehículo <patente> no está disponible"), crea el contrato con `ServicioAlquiler.crearContrato` con `TarifaDiaria` (mismas validaciones y numeración) y guarda enseguida. Si algo falla antes de guardar, no escribe nada; si el archivo falta o está dañado lanza "No se pudieron cargar los datos" y no lo crea. Entre la lectura y la escritura hay una ventana de milisegundos en la que un guardado del operario se perdería (gana el último que guarda).
 - `ServicioOperario(gestor, agencia)` concentra los cambios del operario. `agencia` es la agencia "viva" que leen los servicios de consulta y las tablas; el archivo es la fuente de verdad. `aplicar(cambio)` (privado, con la interfaz privada `Cambio<T>`) vuelve a leer `agencia.dat` (si no existe empieza con una agencia vacía; si está dañado lanza "No se pudieron cargar los datos" y no lo toca), aplica el cambio sobre esos datos con los servicios de siempre, guarda enseguida y recién entonces copia el resultado a la agencia viva con `Agencia.reemplazarCon`; si guardar falla, la agencia viva no cambia. Las operaciones buscan por clave en los datos frescos: `eliminarVehiculo(patente)` y `eliminarCliente(dni)` (si ya no existen no hacen nada), `crearContrato(dni, patente, fin)` ("No hay ningún cliente registrado con el DNI <dni>" / "El vehículo <patente> no está disponible") y `registrarDevolucion(numero, fecha, kmFinal)`, que devuelve el contrato ya actualizado. Un número de contrato que no existe en el archivo todavía no tiene mensaje propio (`NoSuchElementException`). `recargar()` copia el archivo a la agencia viva (sin archivo no hace nada).
 - `VentanaPrincipal` tiene un `Timer` de `INTERVALO_MS` (3000 ms) que llama a `ServicioOperario.recargar()` y a `refrescar()` de los tres paneles; si la recarga falla se ignora y se reintenta. Cada panel recuerda la clave de la fila elegida (`patenteElegida`, `dniElegido` o `numeroElegido`, actualizada solo cuando el usuario cambia la selección) y la vuelve a seleccionar al refrescar; el filtro y la búsqueda los guarda el modelo de la tabla. Los formularios que cambian datos reciben el `ServicioOperario`; `FormularioContrato` y `FormularioDevolucion` le pasan DNI, patente o número en vez de objetos, porque los objetos de la pantalla pueden ser de una recarga anterior.

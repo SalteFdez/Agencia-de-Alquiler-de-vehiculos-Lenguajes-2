@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import modelo.Agencia;
 import modelo.alquiler.Contrato;
@@ -20,7 +21,9 @@ import modelo.clientes.Cliente;
 import modelo.clientes.LicenciaConducir;
 import modelo.flota.Auto;
 import modelo.flota.EstadoVehiculo;
+import modelo.flota.Moto;
 import modelo.flota.TipoCaja;
+import modelo.flota.Vehiculo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -215,5 +218,94 @@ class ServicioKioscoTest {
                 () -> kiosco.alquilar("30123456", "AB123CD", LocalDate.now().plusDays(3)));
         assertEquals("No se pudieron cargar los datos", danado.getMessage());
         assertArrayEquals(new byte[] {1, 2, 3}, Files.readAllBytes(carpeta.resolve("agencia.dat")));
+    }
+
+    private static Moto honda() {
+        return new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000, 8000.0, 125, true);
+    }
+
+    private static Auto ka() {
+        return new Auto("ZZ999ZZ", "Ford", "Ka", "Negro", 2019, 40000, 9000.0, 4, 5, TipoCaja.MANUAL);
+    }
+
+    private static List<String> patentes(List<Vehiculo> vehiculos) {
+        List<String> patentes = new java.util.ArrayList<>();
+        for (Vehiculo v : vehiculos) {
+            patentes.add(v.getPatente());
+        }
+        return patentes;
+    }
+
+    @Test
+    void disponiblesDevuelveSoloLosVehiculosDisponiblesDelArchivoEnElOrdenDeLaFlota()
+            throws AlquilerException {
+        Agencia agencia = new Agencia();
+        Moto alquilada = honda();
+        alquilada.cambiarEstado(EstadoVehiculo.ALQUILADO);
+        new ServicioFlota(agencia).registrarVehiculo(cronos());
+        new ServicioFlota(agencia).registrarVehiculo(alquilada);
+        new ServicioFlota(agencia).registrarVehiculo(ka());
+        GestorPersistencia gestor = gestor();
+        gestor.guardar(agencia);
+
+        List<Vehiculo> disponibles = new ServicioKiosco(gestor).disponibles();
+
+        assertEquals(List.of("AB123CD", "ZZ999ZZ"), patentes(disponibles));
+    }
+
+    @Test
+    void disponiblesYaNoIncluyeElVehiculoQueElOperarioAlquiloOLoDioDeBajaDespues()
+            throws AlquilerException {
+        Agencia agencia = new Agencia();
+        new ServicioClientes(agencia).registrarCliente(ana());
+        new ServicioFlota(agencia).registrarVehiculo(cronos());
+        new ServicioFlota(agencia).registrarVehiculo(honda());
+        new ServicioFlota(agencia).registrarVehiculo(ka());
+        GestorPersistencia gestor = gestor();
+        gestor.guardar(agencia);
+        ServicioKiosco kiosco = new ServicioKiosco(gestor);
+        assertEquals(List.of("AB123CD", "A123BCD", "ZZ999ZZ"), patentes(kiosco.disponibles()));
+
+        Agencia delOperario = gestor.cargar();
+        new ServicioAlquiler(delOperario).crearContrato(delOperario.getClientes().get(0),
+                delOperario.getVehiculos().get(0), new modelo.tarifas.TarifaDiaria(),
+                LocalDate.now().plusDays(2));
+        new ServicioFlota(delOperario).eliminarVehiculo(delOperario.getVehiculos().get(2));
+        gestor.guardar(delOperario);
+
+        assertEquals(List.of("A123BCD"), patentes(kiosco.disponibles()));
+    }
+
+    @Test
+    void disponiblesIncluyeElVehiculoNuevoYElDevueltoQueElOperarioGuardoDespues()
+            throws AlquilerException {
+        Agencia agencia = new Agencia();
+        new ServicioClientes(agencia).registrarCliente(ana());
+        new ServicioFlota(agencia).registrarVehiculo(cronos());
+        GestorPersistencia gestor = gestor();
+        gestor.guardar(agencia);
+        ServicioKiosco kiosco = new ServicioKiosco(gestor);
+        kiosco.alquilar("30123456", "AB123CD", LocalDate.now().plusDays(3));
+        assertEquals(List.of(), patentes(kiosco.disponibles()));
+
+        Agencia delOperario = gestor.cargar();
+        new ServicioFlota(delOperario).registrarVehiculo(ka());
+        new ServicioAlquiler(delOperario).registrarDevolucion(delOperario.getContratos().get(0),
+                LocalDate.now(), 15200);
+        gestor.guardar(delOperario);
+
+        assertEquals(List.of("AB123CD", "ZZ999ZZ"), patentes(kiosco.disponibles()));
+    }
+
+    @Test
+    void disponiblesConElArchivoAusenteODaniadoLanzaNoSePudieronCargarLosDatos() throws IOException {
+        ServicioKiosco kiosco = new ServicioKiosco(gestor());
+
+        AlquilerException ausente = assertThrows(AlquilerException.class, kiosco::disponibles);
+        Files.write(carpeta.resolve("agencia.dat"), new byte[] {1, 2, 3});
+        AlquilerException danado = assertThrows(AlquilerException.class, kiosco::disponibles);
+
+        assertEquals("No se pudieron cargar los datos", ausente.getMessage());
+        assertEquals("No se pudieron cargar los datos", danado.getMessage());
     }
 }

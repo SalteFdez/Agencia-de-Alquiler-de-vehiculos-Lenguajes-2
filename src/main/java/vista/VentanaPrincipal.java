@@ -11,8 +11,6 @@ import servicio.ServicioOperario;
 
 public class VentanaPrincipal extends JFrame {
 
-    private static final int INTERVALO_MS = 3000;
-
     private final Timer temporizador;
 
     public VentanaPrincipal(ServicioFlota servicioFlota, ServicioClientes servicioClientes,
@@ -30,7 +28,7 @@ public class VentanaPrincipal extends JFrame {
         pestanias.addTab("Contratos", panelContratos);
         add(pestanias);
 
-        temporizador = new Timer(INTERVALO_MS, e -> {
+        temporizador = new Timer(Recarga.INTERVALO_MS, e -> {
             try {
                 servicioOperario.recargar();
             } catch (AlquilerException ex) {

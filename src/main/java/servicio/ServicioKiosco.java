@@ -3,9 +3,11 @@ package servicio;
 import excepciones.AlquilerException;
 import excepciones.VehiculoNoDisponibleException;
 import java.time.LocalDate;
+import java.util.List;
 import modelo.Agencia;
 import modelo.alquiler.Contrato;
 import modelo.clientes.Cliente;
+import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
 import modelo.tarifas.TarifaDiaria;
 import persistencia.GestorPersistencia;
@@ -31,5 +33,9 @@ public class ServicioKiosco {
                 .crearContrato(cliente, vehiculo, new TarifaDiaria(), fin);
         gestor.guardar(agencia);
         return contrato;
+    }
+
+    public List<Vehiculo> disponibles() throws AlquilerException {
+        return new ServicioFlota(gestor.cargar()).filtrar(null, EstadoVehiculo.DISPONIBLE);
     }
 }
