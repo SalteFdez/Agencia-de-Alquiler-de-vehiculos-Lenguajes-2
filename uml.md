@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #20 terminada (el kiosco se actualiza solo cada 3 s: `ServicioKiosco.disponibles()`, `PanelKiosco.actualizar` reutiliza tarjetas, intervalo compartido `Recarga.INTERVALO_MS`).
+Última actualización: historia #21 terminada (ticket PDF del alquiler del kiosco: `GeneradorTicket` en `tickets/contrato-<N>.pdf`, `Formatos.precio`, mensaje de éxito con la ruta o con aviso de ticket no disponible).
 
 ## Diagrama
 
@@ -201,7 +201,8 @@ classDiagram
             -servicioKiosco: ServicioKiosco
             -panel: PanelKiosco
             -temporizador: Timer
-            +VentanaKiosco(gestor: GestorPersistencia, fotos: CarpetaFotos)
+            -generadorTicket: GeneradorTicket
+            +VentanaKiosco(gestor: GestorPersistencia, fotos: CarpetaFotos, generadorTicket: GeneradorTicket)
             -actualizar() void
         }
         class FormularioAlquiler {
@@ -210,12 +211,14 @@ classDiagram
             -vehiculo: Vehiculo
             -servicioAlquiler: ServicioAlquiler
             -servicioKiosco: ServicioKiosco
+            -generadorTicket: GeneradorTicket
             -alAlquilar: Runnable
             -campoDni: JTextField
             -campoFechaDevolucion: JTextField
             -etiquetaTotal: JLabel
-            +FormularioAlquiler(padre: Frame, vehiculo: Vehiculo, servicioAlquiler: ServicioAlquiler, servicioKiosco: ServicioKiosco, alAlquilar: Runnable)
+            +FormularioAlquiler(padre: Frame, vehiculo: Vehiculo, servicioAlquiler: ServicioAlquiler, servicioKiosco: ServicioKiosco, generadorTicket: GeneradorTicket, alAlquilar: Runnable)
             -confirmar() void
+            -textoDelTicket(contrato: Contrato) String
             -actualizarTotal() void
         }
         class MensajeKiosco {
@@ -280,6 +283,15 @@ classDiagram
             +listarContratos(estado: EstadoContrato) List~Contrato~
             +buscarPorNumero(numero: int) Optional~Contrato~
         }
+        class GeneradorTicket {
+            -WINDOWS_1252: Charset$
+            -carpeta: File
+            +GeneradorTicket(carpeta: File)
+            +generar(contrato: Contrato) File
+            -lineasDe(contrato: Contrato) List~String~
+            -armarPdf(lineas: List~String~) byte[]
+            -escapar(texto: String)$ String
+        }
         class ServicioKiosco {
             -gestor: GestorPersistencia
             +ServicioKiosco(gestor: GestorPersistencia)
@@ -318,6 +330,7 @@ classDiagram
     namespace modelo {
         class Formatos {
             +FECHA: DateTimeFormatter$
+            +precio(valor: double)$ String
             -Formatos()
         }
         class Agencia {
@@ -509,6 +522,8 @@ classDiagram
     ServicioClientes --> "1" Agencia
     ServicioAlquiler --> "1" Agencia
     ServicioKiosco --> GestorPersistencia
+    GeneradorTicket --> Contrato
+    GeneradorTicket ..> Formatos : usa precio y FECHA
     ServicioOperario --> GestorPersistencia
     ServicioOperario --> "1" Agencia
     ServicioOperario ..> Cambio
@@ -559,6 +574,9 @@ classDiagram
     VentanaKiosco ..> Main : carga con cargarAgencia
     VentanaKiosco --> PanelKiosco
     VentanaKiosco --> ServicioKiosco
+    VentanaKiosco --> GeneradorTicket
+    MainKiosco ..> GeneradorTicket : crea
+    FormularioAlquiler --> GeneradorTicket
     VentanaKiosco ..> Recarga : usa INTERVALO_MS
     VentanaPrincipal ..> Recarga : usa INTERVALO_MS
     VentanaKiosco --> FormularioAlquiler
@@ -581,9 +599,10 @@ classDiagram
 | `Moto` | `modelo.flota` | Hecho | — | #2, #10 |
 | `Camioneta` | `modelo.flota` | Hecho | — | #3, #10 |
 | `Agencia` | `modelo` | Hecho | — | #6, #9, #16, #19 |
-| `Formatos` | `modelo` | Hecho | — | refactor |
+| `Formatos` | `modelo` | Hecho | Usar `precio` en `TarjetaVehiculo` y `FormularioAlquiler`, que repiten el formato | refactor, #21 |
 | `MainKiosco`, `VentanaKiosco`, `PanelKiosco`, `TarjetaVehiculo`, `CarpetaFotos`, `FormularioAlquiler`, `MensajeKiosco`, `Recarga` | `vista` | Hecho para #20 | Crecen con cada historia | #17, #18, #20 |
-| `ServicioKiosco` | `servicio` | Hecho | Que el kiosco se actualice solo (#20) | #18, #19 |
+| `ServicioKiosco` | `servicio` | Hecho | — | #18, #19, #20 |
+| `GeneradorTicket` | `servicio` | Hecho para #21 | Tickets de contratos del operario y de devoluciones (fuera de alcance) | #21 |
 | `ServicioOperario` | `servicio` | Hecho | — | #19 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1, #16 |
@@ -652,3 +671,5 @@ classDiagram
 - `VentanaPrincipal` tiene un `Timer` de `INTERVALO_MS` (3000 ms) que llama a `ServicioOperario.recargar()` y a `refrescar()` de los tres paneles; si la recarga falla se ignora y se reintenta. Cada panel recuerda la clave de la fila elegida (`patenteElegida`, `dniElegido` o `numeroElegido`, actualizada solo cuando el usuario cambia la selección) y la vuelve a seleccionar al refrescar; el filtro y la búsqueda los guarda el modelo de la tabla. Los formularios que cambian datos reciben el `ServicioOperario`; `FormularioContrato` y `FormularioDevolucion` le pasan DNI, patente o número en vez de objetos, porque los objetos de la pantalla pueden ser de una recarga anterior.
 - `FormularioAlquiler` (diálogo modal con letra de 28 pt) muestra el vehículo elegido, pide el DNI y la fecha de devolución (`dd/mm/aaaa`) y recalcula el total con `ServicioAlquiler.calcularTotalEstimado` al escribir una fecha válida ("-" si no lo es; formato argentino fijo). Al confirmar cierra el formulario, llama a `alAlquilar` (que rearma la grilla con los datos recién guardados) y muestra `MensajeKiosco.exito` con el número de contrato; ante un error muestra `MensajeKiosco.error` y el formulario sigue abierto. `MensajeKiosco` muestra los mensajes con letra grande: el de éxito se cierra solo a los `SEGUNDOS_PARA_CERRAR` (6) o con Aceptar; el de error espera a que se toque Aceptar.
 - `CarpetaFotos.buscarFoto(patente)` devuelve el archivo `<patente>.png` de la carpeta `imagenes/` (en la carpeta desde la que se ejecuta) o vacío si la carpeta o la foto no existen. `TarjetaVehiculo` tiene tres etiquetas con nombre (`imagen`, `marcaModelo` y `precio`): la foto se escala sin deformarse a un recuadro de `ANCHO_FOTO` × `ALTO_FOTO` (320 × 200); sin foto, o con una foto ilegible, la etiqueta `imagen` muestra `getTipo()`. El precio es `getPrecioDiario()` con formato argentino fijo ("$11.500,00 por día"), distinto del formato de la máquina que usan las otras pantallas.
+- El ticket del kiosco (#21) lo escribe `GeneradorTicket(carpeta)`, que se arma en `MainKiosco` con la carpeta `tickets` (junto a `agencia.dat`, ignorada por git) y llega a `FormularioAlquiler` a través de `VentanaKiosco`. `generar(contrato)` crea la carpeta si no existe y escribe `contrato-<N>.pdf`: un PDF de una página, solo texto, hecho a mano con Java puro (sin librerías) en Helvetica con codificación WinAnsi (cp1252, un byte por carácter) para que salgan bien los acentos y las eñes, con los datos que usa la pantalla (`Formatos.FECHA`, `Formatos.precio`). `escapar` protege `(`, `)` y `\` y la tabla `xref` se calcula con los offsets reales. Si algo falla lanza `AlquilerException("No se pudo generar el ticket")`.
+- `FormularioAlquiler.confirmar()` genera el ticket después de guardar el contrato (`ServicioKiosco.alquilar`): `textoDelTicket` lo abre con `Desktop.open` y devuelve "Tu ticket: <ruta>", o "El ticket no está disponible." si no se pudo generar ni abrir. El alquiler nunca falla por el ticket.

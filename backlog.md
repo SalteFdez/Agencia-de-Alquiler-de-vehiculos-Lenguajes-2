@@ -28,3 +28,4 @@ Sistema de escritorio para una agencia de alquiler de vehículos, usado por el p
 - **#18** Como cliente, quiero tocar un vehículo, escribir mi DNI y la fecha de devolución, ver el total y confirmar, para alquilarlo sin pasar por el mostrador. Requiere: #17
 - **#19** Como operario, quiero ver los contratos hechos en el kiosco sin cerrar mi aplicación, y que lo que yo guarde no los borre, para poder atender esas devoluciones. Requiere: #18
 - **#20** Como cliente, quiero que el kiosco deje de mostrar los vehículos que el operario acaba de alquilar o dar de baja, para no elegir uno que ya no está. Requiere: #17
+- **#21** Como cliente, quiero recibir un ticket en PDF al confirmar mi alquiler en el kiosco, para quedarme con el comprobante del contrato. Requiere: #18

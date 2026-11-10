@@ -6,3 +6,5 @@ out-kiosco/
 .DS_Store
 CLAUDE.md
 plan.md
+tickets/
+agencia.dat.tmp

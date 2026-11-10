@@ -6,6 +6,7 @@ import javax.swing.Timer;
 import excepciones.AlquilerException;
 import modelo.Agencia;
 import persistencia.GestorPersistencia;
+import servicio.GeneradorTicket;
 import servicio.ServicioAlquiler;
 import servicio.ServicioFlota;
 import servicio.ServicioKiosco;
@@ -16,7 +17,8 @@ public class VentanaKiosco extends JFrame {
     private final PanelKiosco panel;
     private final Timer temporizador;
 
-    public VentanaKiosco(GestorPersistencia gestor, CarpetaFotos fotos) {
+    public VentanaKiosco(GestorPersistencia gestor, CarpetaFotos fotos,
+                         GeneradorTicket generadorTicket) {
         super("Kiosco - Alquiler de vehículos");
         this.servicioKiosco = new ServicioKiosco(gestor);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -25,7 +27,7 @@ public class VentanaKiosco extends JFrame {
         ServicioAlquiler servicioAlquiler = new ServicioAlquiler(agencia);
         panel = new PanelKiosco(new ServicioFlota(agencia), fotos,
                 vehiculo -> new FormularioAlquiler(this, vehiculo, servicioAlquiler,
-                        servicioKiosco, this::actualizar).setVisible(true));
+                        servicioKiosco, generadorTicket, this::actualizar).setVisible(true));
         add(panel);
 
         temporizador = new Timer(Recarga.INTERVALO_MS, e -> actualizar());

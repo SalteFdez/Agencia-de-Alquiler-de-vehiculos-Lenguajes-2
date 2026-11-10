@@ -4,7 +4,10 @@ import excepciones.AlquilerException;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Desktop;
 import java.awt.GridLayout;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Locale;
 import javax.swing.JButton;
@@ -16,6 +19,7 @@ import javax.swing.border.EmptyBorder;
 import modelo.Formatos;
 import modelo.alquiler.Contrato;
 import modelo.flota.Vehiculo;
+import servicio.GeneradorTicket;
 import servicio.ServicioAlquiler;
 import servicio.ServicioKiosco;
 
@@ -27,6 +31,7 @@ public class FormularioAlquiler extends JDialog {
     private final Vehiculo vehiculo;
     private final ServicioAlquiler servicioAlquiler;
     private final ServicioKiosco servicioKiosco;
+    private final GeneradorTicket generadorTicket;
     private final Runnable alAlquilar;
 
     private final JTextField campoDni = new JTextField(12);
@@ -34,11 +39,13 @@ public class FormularioAlquiler extends JDialog {
     private final JLabel etiquetaTotal = new JLabel(SIN_TOTAL);
 
     public FormularioAlquiler(Frame padre, Vehiculo vehiculo, ServicioAlquiler servicioAlquiler,
-                              ServicioKiosco servicioKiosco, Runnable alAlquilar) {
+                              ServicioKiosco servicioKiosco, GeneradorTicket generadorTicket,
+                              Runnable alAlquilar) {
         super(padre, "Alquilar vehículo", true);
         this.vehiculo = vehiculo;
         this.servicioAlquiler = servicioAlquiler;
         this.servicioKiosco = servicioKiosco;
+        this.generadorTicket = generadorTicket;
         this.alAlquilar = alAlquilar;
 
         PanelClientes.alCambiarElTexto(campoFechaDevolucion, this::actualizarTotal);
@@ -93,9 +100,21 @@ public class FormularioAlquiler extends JDialog {
             alAlquilar.run();
             MensajeKiosco.exito(getOwner(), "¡Listo! Tu contrato es el N° " + contrato.getNumero()
                     + ".\n" + vehiculo.getMarca() + " " + vehiculo.getModelo()
-                    + "\nDevolución: " + fin.format(Formatos.FECHA));
+                    + "\nDevolución: " + fin.format(Formatos.FECHA)
+                    + textoDelTicket(contrato));
         } catch (AlquilerException ex) {
             MensajeKiosco.error(this, ex.getMessage());
+        }
+    }
+
+    private String textoDelTicket(Contrato contrato) {
+        try {
+            File ticket = generadorTicket.generar(contrato);
+            Desktop.getDesktop().open(ticket);
+            return "\nTu ticket: " + ticket.getAbsolutePath();
+        } catch (AlquilerException | IOException | UnsupportedOperationException
+                 | SecurityException e) {
+            return "\nEl ticket no está disponible.";
         }
     }
 
