@@ -26,7 +26,7 @@ public class Main {
         });
     }
 
-    private static Agencia cargarAgencia(GestorPersistencia gestor) {
+    static Agencia cargarAgencia(GestorPersistencia gestor) {
         if (!gestor.existeArchivo()) {
             return new Agencia();
         }

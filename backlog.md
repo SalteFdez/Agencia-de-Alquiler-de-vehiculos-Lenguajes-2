@@ -4,10 +4,10 @@ Historias de usuario del proyecto final de Lenguajes 2 (Grupo 25). Cada historia
 
 ## Contexto
 
-Sistema de escritorio para una agencia de alquiler de vehículos, usado por el personal de mostrador y el encargado de flota.
+Sistema de escritorio para una agencia de alquiler de vehículos, usado por el personal de mostrador y el encargado de flota, y un kiosco de autoservicio (tipo cine o McDonald's) donde el cliente ya registrado elige un vehículo disponible y lo alquila solo.
 
 - **Stack:** Java + Swing.
-- **Decisiones caras de cambiar:** ninguna. Sin login ni permisos por el momento, sin multi-organización, sin modo offline/sincronización, sin multi-idioma ni multi-moneda.
+- **Decisiones caras de cambiar:** el kiosco y la parte del operario funcionan al mismo tiempo sobre el mismo `agencia.dat`. Sin login ni permisos por el momento, sin multi-organización, sin modo offline/sincronización, sin multi-idioma ni multi-moneda.
 
 ## Historias
 
@@ -24,3 +24,7 @@ Sistema de escritorio para una agencia de alquiler de vehículos, usado por el p
 - **#11** Como operador, quiero registrar la devolución con fecha y km final, para cerrar el contrato y saber cuánto cobrar. Requiere: #9
 - **#15** Como operador, quiero ver los contratos filtrados por estado, para saber qué vehículos están afuera. Requiere: #9
 - **#16** Como operador, quiero que los datos se conserven al cerrar la aplicación, para no perder lo cargado. Requiere: #1
+- **#17** Como cliente, quiero ver en el kiosco los vehículos disponibles como tarjetas grandes con imagen, marca, modelo y precio por día, para elegir uno de un vistazo.
+- **#18** Como cliente, quiero tocar un vehículo, escribir mi DNI y la fecha de devolución, ver el total y confirmar, para alquilarlo sin pasar por el mostrador. Requiere: #17
+- **#19** Como operario, quiero ver los contratos hechos en el kiosco sin cerrar mi aplicación, y que lo que yo guarde no los borre, para poder atender esas devoluciones. Requiere: #18
+- **#20** Como cliente, quiero que el kiosco deje de mostrar los vehículos que el operario acaba de alquilar o dar de baja, para no elegir uno que ya no está. Requiere: #17
