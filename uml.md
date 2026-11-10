@@ -11,7 +11,7 @@ Fuente de verdad del diseño, en texto. Los nombres de clases, atributos y méto
 
 Notación (Mermaid): `-` privado, `+` público, `#` protegido, `*` abstracto, `$` static. `<|--` herencia, `<|..` implementa, `*--` composición, `o--` agregación, `-->` asociación, `..>` dependencia.
 
-Última actualización: historia #17 terminada (kiosco: ver los vehículos disponibles como tarjetas).
+Última actualización: historia #18 terminada (kiosco: alquilar un vehículo tocando su tarjeta) y dos arreglos de la #17 (tarjetas con alto natural, el kiosco compila en `out-kiosco/`).
 
 ## Diagrama
 
@@ -183,12 +183,36 @@ classDiagram
             +main(args: String[])$ void
         }
         class VentanaKiosco {
-            +VentanaKiosco(servicio: ServicioFlota, fotos: CarpetaFotos)
+            -gestor: GestorPersistencia
+            -fotos: CarpetaFotos
+            +VentanaKiosco(gestor: GestorPersistencia, fotos: CarpetaFotos)
+            -mostrarVehiculos() void
+        }
+        class FormularioAlquiler {
+            -FUENTE: Font$
+            -SIN_TOTAL: String$
+            -vehiculo: Vehiculo
+            -servicioAlquiler: ServicioAlquiler
+            -servicioKiosco: ServicioKiosco
+            -alAlquilar: Runnable
+            -campoDni: JTextField
+            -campoFechaDevolucion: JTextField
+            -etiquetaTotal: JLabel
+            +FormularioAlquiler(padre: Frame, vehiculo: Vehiculo, servicioAlquiler: ServicioAlquiler, servicioKiosco: ServicioKiosco, alAlquilar: Runnable)
+            -confirmar() void
+            -actualizarTotal() void
+        }
+        class MensajeKiosco {
+            -SEGUNDOS_PARA_CERRAR: int$
+            -FUENTE: Font$
+            +exito(padre: Component, texto: String)$ void
+            +error(padre: Component, texto: String)$ void
+            -mostrar(padre: Component, titulo: String, texto: String, tipo: int, segundos: int)$ void
         }
         class PanelKiosco {
             -servicio: ServicioFlota
             -fotos: CarpetaFotos
-            +PanelKiosco(servicio: ServicioFlota, fotos: CarpetaFotos)
+            +PanelKiosco(servicio: ServicioFlota, fotos: CarpetaFotos, alElegir: Consumer~Vehiculo~)
         }
         class TarjetaVehiculo {
             -ANCHO_FOTO: int$
@@ -480,8 +504,14 @@ classDiagram
     ModeloTablaClientes --> ServicioClientes
     ModeloTablaContratos --> ServicioAlquiler
     MainKiosco ..> VentanaKiosco : crea
-    MainKiosco ..> GestorPersistencia : carga
+    MainKiosco ..> GestorPersistencia : crea
+    VentanaKiosco ..> Main : carga con cargarAgencia
     VentanaKiosco --> PanelKiosco
+    VentanaKiosco --> GestorPersistencia
+    VentanaKiosco --> FormularioAlquiler
+    FormularioAlquiler --> ServicioAlquiler
+    FormularioAlquiler --> ServicioKiosco
+    FormularioAlquiler --> MensajeKiosco
     PanelKiosco --> ServicioFlota
     PanelKiosco --> CarpetaFotos
     PanelKiosco *-- TarjetaVehiculo
@@ -499,7 +529,8 @@ classDiagram
 | `Camioneta` | `modelo.flota` | Hecho | — | #3, #10 |
 | `Agencia` | `modelo` | Hecho | — | #6, #9, #16 |
 | `Formatos` | `modelo` | Hecho | — | refactor |
-| `MainKiosco`, `VentanaKiosco`, `PanelKiosco`, `TarjetaVehiculo`, `CarpetaFotos` | `vista` | Parcial | Tocar una tarjeta y alquilar (#18); actualizarse solo (#20) | #17, #18, #20 |
+| `MainKiosco`, `VentanaKiosco`, `PanelKiosco`, `TarjetaVehiculo`, `CarpetaFotos`, `FormularioAlquiler`, `MensajeKiosco` | `vista` | Parcial | Actualizarse solo (#20) | #17, #18, #20 |
+| `ServicioKiosco` | `servicio` | Hecho | Que el operario vea los contratos del kiosco sin cerrar y que al cerrar no los pise (#19) | #18, #19 |
 | `ServicioFlota` | `servicio` | Hecho | — | #1, #4, #5 |
 | `AlquilerException` | `excepciones` | Hecho | — | #1, #16 |
 | `Main`, `VentanaPrincipal`, `PanelFlota`, `PanelClientes`, `PanelContratos`, `FormularioContrato`, `FormularioDevolucion`, `FormularioAuto`, `FormularioMoto`, `FormularioCamioneta`, `FormularioCliente`, `PanelDatosVehiculo`, `ModeloTablaFlota`, `ModeloTablaClientes`, `ModeloTablaContratos` | `vista` | Hecho para #17 | Crecen con cada historia | #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11, #15, #16, #17 |
@@ -560,6 +591,8 @@ classDiagram
 - `Agencia`, `Vehiculo` (y por herencia `Auto`, `Moto` y `Camioneta`), `Cliente`, `LicenciaConducir`, `Contrato` y `TarifaDiaria` implementan `java.io.Serializable` con `serialVersionUID = 1L`; los enums ya lo son. `Tarifa` es una interfaz sin `Serializable`: una tarifa nueva tiene que implementarlo para poder guardarse. Si el modelo cambia, hay que borrar `agencia.dat` (no hay migración de versiones).
 - `GestorPersistencia(archivo)` guarda la agencia completa con `ObjectOutputStream` (se sobrescribe el archivo) y la carga con `ObjectInputStream`; como se serializa todo el grafo junto, los contratos siguen apuntando a los mismos `Vehiculo` y `Cliente` de las listas y los contadores (`ultimoIdCliente`, `ultimoNroContrato`) se conservan. `guardar()` y `cargar()` lanzan `AlquilerException` ("No se pudieron guardar los datos" / "No se pudieron cargar los datos") con el error original como causa, usando el constructor `AlquilerException(mensaje, causa)`. `cargar()` no contempla un archivo que contenga otra clase (`ClassCastException`).
 - `Main` usa `new File("agencia.dat")`, en la carpeta desde la que se ejecuta la aplicación. `cargarAgencia(gestor)` (privado) carga el archivo si existe; sin archivo arranca con una agencia vacía y sin mensajes, y si la carga falla muestra el diálogo "No se pudieron cargar los datos" y arranca vacía. `guardarAlCerrar(ventana, gestor, agencia)` (privado) pone la ventana en `DO_NOTHING_ON_CLOSE` y, al cerrarla, guarda y la cierra con `dispose()`; si no se puede guardar, el diálogo "No se pudieron guardar los datos" pregunta "¿Cerrar igual sin guardar?": Sí cierra y No deja la ventana abierta. Se guarda solo al cerrar la ventana, no después de cada cambio.
-- El kiosco es una aplicación aparte de la del operario: se lanza con `ejecutar-kiosco.sh` (`vista.MainKiosco`) y solo lee: carga `agencia.dat` al abrir con `Main.cargarAgencia()` (del paquete; mismo comportamiento ante un archivo ausente o dañado) y nunca guarda. Como el operario guarda solo al cerrar su aplicación, el kiosco muestra lo que había en el archivo al abrirse.
-- `VentanaKiosco` es un `JFrame` maximizado que cierra con `EXIT_ON_CLOSE` y contiene un `PanelKiosco`. `PanelKiosco` pide a `ServicioFlota.filtrar(null, DISPONIBLE)` los vehículos y arma una grilla de 3 columnas dentro de un `JScrollPane`, con una `TarjetaVehiculo` por vehículo en el orden de la flota.
+- El kiosco es una aplicación aparte de la del operario: se lanza con `ejecutar-kiosco.sh` (`vista.MainKiosco`) y trabaja sobre el mismo `agencia.dat`: `VentanaKiosco` lo carga con `Main.cargarAgencia()` (del paquete; mismo comportamiento ante un archivo ausente o dañado) al abrir y cada vez que rearma la grilla, y guarda solo al confirmar un alquiler, a través de `ServicioKiosco`. Como el operario guarda solo al cerrar su aplicación, si la tiene abierta mientras el kiosco alquila, al cerrarla pisa el contrato del kiosco (lo resuelve la #19).
+- `VentanaKiosco` es un `JFrame` maximizado que cierra con `EXIT_ON_CLOSE` y contiene un `PanelKiosco`. `PanelKiosco` pide a `ServicioFlota.filtrar(null, DISPONIBLE)` los vehículos y arma una grilla de 3 columnas (pegada arriba, para que las tarjetas conserven su alto natural) dentro de un `JScrollPane`, con una `TarjetaVehiculo` por vehículo en el orden de la flota; al tocar una tarjeta (`mousePressed`) avisa con su vehículo al `Consumer` `alElegir`.
+- `ServicioKiosco.alquilar(dni, patente, fin)` no guarda estado: cada vez valida que el DNI no esté vacío ("Hay que escribir el DNI"), vuelve a cargar `agencia.dat`, busca el cliente con `buscarPorDni` ("No hay ningún cliente registrado con el DNI <dni>") y el vehículo con `buscarPorPatente` (si ya no está: "El vehículo <patente> no está disponible"), crea el contrato con `ServicioAlquiler.crearContrato` con `TarifaDiaria` (mismas validaciones y numeración) y guarda enseguida. Si algo falla antes de guardar, no escribe nada; si el archivo falta o está dañado lanza "No se pudieron cargar los datos" y no lo crea. Entre la lectura y la escritura hay una ventana de milisegundos en la que un guardado del operario se perdería (lo resuelve la #19).
+- `FormularioAlquiler` (diálogo modal con letra de 28 pt) muestra el vehículo elegido, pide el DNI y la fecha de devolución (`dd/mm/aaaa`) y recalcula el total con `ServicioAlquiler.calcularTotalEstimado` al escribir una fecha válida ("-" si no lo es; formato argentino fijo). Al confirmar cierra el formulario, llama a `alAlquilar` (que rearma la grilla con los datos recién guardados) y muestra `MensajeKiosco.exito` con el número de contrato; ante un error muestra `MensajeKiosco.error` y el formulario sigue abierto. `MensajeKiosco` muestra los mensajes con letra grande: el de éxito se cierra solo a los `SEGUNDOS_PARA_CERRAR` (6) o con Aceptar; el de error espera a que se toque Aceptar.
 - `CarpetaFotos.buscarFoto(patente)` devuelve el archivo `<patente>.png` de la carpeta `imagenes/` (en la carpeta desde la que se ejecuta) o vacío si la carpeta o la foto no existen. `TarjetaVehiculo` tiene tres etiquetas con nombre (`imagen`, `marcaModelo` y `precio`): la foto se escala sin deformarse a un recuadro de `ANCHO_FOTO` × `ALTO_FOTO` (320 × 200); sin foto, o con una foto ilegible, la etiqueta `imagen` muestra `getTipo()`. El precio es `getPrecioDiario()` con formato argentino fijo ("$11.500,00 por día"), distinto del formato de la máquina que usan las otras pantallas.

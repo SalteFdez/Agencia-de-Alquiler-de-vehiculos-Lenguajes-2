@@ -1,15 +1,18 @@
 package vista;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import modelo.flota.Vehiculo;
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -53,7 +56,7 @@ class PanelKioscoTest {
         agencia.getVehiculos().add(cronos());
         agencia.getVehiculos().add(honda());
 
-        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()));
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
 
         assertEquals(2, tarjetas(panel).size());
     }
@@ -66,7 +69,7 @@ class PanelKioscoTest {
         agencia.getVehiculos().add(alquilado);
         agencia.getVehiculos().add(honda());
 
-        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()));
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
 
         List<TarjetaVehiculo> mostradas = tarjetas(panel);
         assertEquals(1, mostradas.size());
@@ -88,7 +91,7 @@ class PanelKioscoTest {
         ImageIO.write(new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB), "png",
                 carpeta.resolve("AB123CD.png").toFile());
 
-        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()));
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
 
         List<TarjetaVehiculo> mostradas = tarjetas(panel);
         assertEquals(2, mostradas.size());
@@ -103,7 +106,7 @@ class PanelKioscoTest {
     void conPocosVehiculosLasTarjetasConservanSuAltoNaturalYQuedanArriba() {
         Agencia agencia = new Agencia();
         agencia.getVehiculos().add(cronos());
-        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()));
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia), new CarpetaFotos(carpeta.toFile()), vehiculo -> { });
 
         panel.setSize(1280, 800);
         acomodar(panel);
@@ -129,5 +132,23 @@ class PanelKioscoTest {
             }
         }
         return null;
+    }
+
+    @Test
+    void tocarUnaTarjetaAvisaConElVehiculoDeEsaTarjeta() {
+        Agencia agencia = new Agencia();
+        agencia.getVehiculos().add(cronos());
+        Moto honda = honda();
+        agencia.getVehiculos().add(honda);
+        List<Vehiculo> elegidos = new ArrayList<>();
+        PanelKiosco panel = new PanelKiosco(new ServicioFlota(agencia),
+                new CarpetaFotos(carpeta.toFile()), elegidos::add);
+
+        TarjetaVehiculo segunda = tarjetas(panel).get(1);
+        segunda.dispatchEvent(new MouseEvent(segunda, MouseEvent.MOUSE_PRESSED,
+                System.currentTimeMillis(), 0, 10, 10, 1, false));
+
+        assertEquals(1, elegidos.size());
+        assertSame(honda, elegidos.get(0));
     }
 }
