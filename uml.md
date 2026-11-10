@@ -233,6 +233,11 @@ classDiagram
             -motivoDeRechazo(c: Cliente, v: Vehiculo, fin: LocalDate) String
             +listarContratos(estado: EstadoContrato) List~Contrato~
         }
+        class ServicioKiosco {
+            -gestor: GestorPersistencia
+            +ServicioKiosco(gestor: GestorPersistencia)
+            +alquilar(dni: String, patente: String, fin: LocalDate) Contrato
+        }
     }
 
     namespace persistencia {
@@ -437,6 +442,7 @@ classDiagram
     ServicioFlota --> "1" Agencia
     ServicioClientes --> "1" Agencia
     ServicioAlquiler --> "1" Agencia
+    ServicioKiosco --> GestorPersistencia
     GestorPersistencia ..> Agencia : serializa
 
     Exception <|-- AlquilerException
