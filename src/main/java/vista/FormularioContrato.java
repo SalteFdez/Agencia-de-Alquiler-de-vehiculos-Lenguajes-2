@@ -5,7 +5,6 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -102,12 +101,11 @@ public class FormularioContrato extends JDialog {
         Vehiculo vehiculo = (Vehiculo) comboVehiculo.getSelectedItem();
         try {
             LocalDate fin = FormularioCliente.fecha("de fin prevista", campoFechaFin);
-            LocalDate hoy = LocalDate.now();
-            if (vehiculo == null || !fin.isAfter(hoy)) {
+            if (vehiculo == null) {
                 etiquetaTotal.setText(SIN_TOTAL);
                 return;
             }
-            double total = new TarifaDiaria().calcular(vehiculo, ChronoUnit.DAYS.between(hoy, fin), 0);
+            double total = servicioAlquiler.calcularTotalEstimado(vehiculo, fin);
             etiquetaTotal.setText(String.format("%.2f", total));
         } catch (AlquilerException ex) {
             etiquetaTotal.setText(SIN_TOTAL);
