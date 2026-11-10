@@ -12,6 +12,7 @@ import modelo.alquiler.EstadoContrato;
 import servicio.ServicioAlquiler;
 import servicio.ServicioClientes;
 import servicio.ServicioFlota;
+import servicio.ServicioOperario;
 
 public class PanelContratos extends JPanel {
 
@@ -21,6 +22,7 @@ public class PanelContratos extends JPanel {
     private final ServicioAlquiler servicioAlquiler;
     private final ServicioClientes servicioClientes;
     private final ServicioFlota servicioFlota;
+    private final ServicioOperario servicioOperario;
     private final Runnable alCambiarFlota;
     private final ModeloTablaContratos modelo;
     private final JComboBox<String> comboEstado =
@@ -33,12 +35,13 @@ public class PanelContratos extends JPanel {
 
     public PanelContratos(Frame padre, ServicioAlquiler servicioAlquiler,
                           ServicioClientes servicioClientes, ServicioFlota servicioFlota,
-                          Runnable alCambiarFlota) {
+                          ServicioOperario servicioOperario, Runnable alCambiarFlota) {
         super(new BorderLayout());
         this.padre = padre;
         this.servicioAlquiler = servicioAlquiler;
         this.servicioClientes = servicioClientes;
         this.servicioFlota = servicioFlota;
+        this.servicioOperario = servicioOperario;
         this.alCambiarFlota = alCambiarFlota;
         this.modelo = new ModeloTablaContratos(servicioAlquiler);
         tablaContratos = new JTable(modelo);
@@ -48,13 +51,13 @@ public class PanelContratos extends JPanel {
                         : EstadoContrato.valueOf((String) comboEstado.getSelectedItem())));
 
         Runnable alCambiarContratos = () -> {
-            modelo.fireTableDataChanged();
+            refrescar();
             alCambiarFlota.run();
         };
 
         nuevoContrato.addActionListener(e ->
                 new FormularioContrato(padre, servicioAlquiler, servicioClientes, servicioFlota,
-                        alCambiarContratos).setVisible(true));
+                        servicioOperario, alCambiarContratos).setVisible(true));
 
         devolucionBoton.setEnabled(false);
         tablaContratos.getSelectionModel().addListSelectionListener(e -> {
@@ -65,7 +68,7 @@ public class PanelContratos extends JPanel {
             }
         });
         devolucionBoton.addActionListener(e ->
-                new FormularioDevolucion(padre, servicioAlquiler,
+                new FormularioDevolucion(padre, servicioOperario,
                         modelo.getContratoEn(tablaContratos.getSelectedRow()),
                         alCambiarContratos).setVisible(true));
 

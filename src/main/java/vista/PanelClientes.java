@@ -14,11 +14,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import modelo.clientes.Cliente;
 import servicio.ServicioClientes;
+import servicio.ServicioOperario;
 
 public class PanelClientes extends JPanel {
 
     private final Frame padre;
     private final ServicioClientes servicio;
+    private final ServicioOperario servicioOperario;
     private final ModeloTablaClientes modelo;
     private final JTextField campoBusqueda = new JTextField(20);
     private final JTable tablaClientes;
@@ -27,15 +29,16 @@ public class PanelClientes extends JPanel {
     private String dniElegido;
     private boolean refrescando;
 
-    public PanelClientes(Frame padre, ServicioClientes servicio) {
+    public PanelClientes(Frame padre, ServicioClientes servicio, ServicioOperario servicioOperario) {
         super(new BorderLayout());
         this.padre = padre;
         this.servicio = servicio;
+        this.servicioOperario = servicioOperario;
         this.modelo = new ModeloTablaClientes(servicio);
         tablaClientes = new JTable(modelo);
 
         agregarCliente.addActionListener(e ->
-                new FormularioCliente(padre, servicio, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioCliente(padre, servicioOperario, this::refrescar).setVisible(true));
         alCambiarElTexto(campoBusqueda, () -> modelo.setFiltro(campoBusqueda.getText()));
         eliminarClienteBoton.setEnabled(false);
         tablaClientes.getSelectionModel().addListSelectionListener(e -> {
@@ -80,8 +83,8 @@ public class PanelClientes extends JPanel {
             return;
         }
         try {
-            servicio.eliminarCliente(elegido);
-            modelo.fireTableDataChanged();
+            servicioOperario.eliminarCliente(elegido.getDni());
+            refrescar();
         } catch (AlquilerException ex) {
             JOptionPane.showMessageDialog(padre, ex.getMessage(),
                     "No se pudo eliminar el cliente", JOptionPane.ERROR_MESSAGE);

@@ -24,11 +24,11 @@ import modelo.Formatos;
 import modelo.clientes.CategoriaLicencia;
 import modelo.clientes.Cliente;
 import modelo.clientes.LicenciaConducir;
-import servicio.ServicioClientes;
+import servicio.ServicioOperario;
 
 public class FormularioCliente extends JDialog {
 
-    private final ServicioClientes servicio;
+    private final ServicioOperario servicio;
     private final Runnable alRegistrar;
 
     private final JTextField nombre = new JTextField(15);
@@ -40,7 +40,7 @@ public class FormularioCliente extends JDialog {
     private final JTextField fechaVencimiento = new JTextField(15);
     private final Map<CategoriaLicencia, JCheckBox> categorias = new EnumMap<>(CategoriaLicencia.class);
 
-    public FormularioCliente(Frame padre, ServicioClientes servicio, Runnable alRegistrar) {
+    public FormularioCliente(Frame padre, ServicioOperario servicio, Runnable alRegistrar) {
         super(padre, "Agregar cliente", true);
         this.servicio = servicio;
         this.alRegistrar = alRegistrar;

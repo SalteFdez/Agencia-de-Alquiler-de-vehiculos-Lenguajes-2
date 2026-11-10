@@ -11,19 +11,19 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import modelo.flota.Auto;
 import modelo.flota.TipoCaja;
-import servicio.ServicioFlota;
+import servicio.ServicioOperario;
 
 public class FormularioAuto extends JDialog {
 
     private final PanelDatosVehiculo datos = new PanelDatosVehiculo();
-    private final ServicioFlota servicio;
+    private final ServicioOperario servicio;
     private final Runnable alRegistrar;
 
     private final JTextField puertas = new JTextField(15);
     private final JTextField pasajeros = new JTextField(15);
     private final JComboBox<TipoCaja> caja = new JComboBox<>(TipoCaja.values());
 
-    public FormularioAuto(Frame padre, ServicioFlota servicio, Runnable alRegistrar) {
+    public FormularioAuto(Frame padre, ServicioOperario servicio, Runnable alRegistrar) {
         super(padre, "Agregar auto", true);
         this.servicio = servicio;
         this.alRegistrar = alRegistrar;

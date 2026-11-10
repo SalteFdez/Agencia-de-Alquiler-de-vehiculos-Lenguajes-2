@@ -1,10 +1,7 @@
 package vista;
 
 import excepciones.AlquilerException;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import modelo.Agencia;
@@ -12,6 +9,7 @@ import persistencia.GestorPersistencia;
 import servicio.ServicioAlquiler;
 import servicio.ServicioClientes;
 import servicio.ServicioFlota;
+import servicio.ServicioOperario;
 
 public class Main {
 
@@ -19,10 +17,9 @@ public class Main {
         GestorPersistencia gestor = new GestorPersistencia(new File("agencia.dat"));
         SwingUtilities.invokeLater(() -> {
             Agencia agencia = cargarAgencia(gestor);
-            VentanaPrincipal ventana = new VentanaPrincipal(new ServicioFlota(agencia),
-                    new ServicioClientes(agencia), new ServicioAlquiler(agencia));
-            guardarAlCerrar(ventana, gestor, agencia);
-            ventana.setVisible(true);
+            new VentanaPrincipal(new ServicioFlota(agencia), new ServicioClientes(agencia),
+                    new ServicioAlquiler(agencia), new ServicioOperario(gestor, agencia))
+                    .setVisible(true);
         });
     }
 
@@ -38,26 +35,5 @@ public class Main {
                     "No se pudieron cargar los datos", JOptionPane.ERROR_MESSAGE);
             return new Agencia();
         }
-    }
-
-    private static void guardarAlCerrar(JFrame ventana, GestorPersistencia gestor, Agencia agencia) {
-        ventana.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        ventana.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                try {
-                    gestor.guardar(agencia);
-                    ventana.dispose();
-                } catch (AlquilerException ex) {
-                    int respuesta = JOptionPane.showConfirmDialog(ventana,
-                            ex.getMessage() + ". ¿Cerrar igual sin guardar?",
-                            "No se pudieron guardar los datos", JOptionPane.YES_NO_OPTION,
-                            JOptionPane.ERROR_MESSAGE);
-                    if (respuesta == JOptionPane.YES_OPTION) {
-                        ventana.dispose();
-                    }
-                }
-            }
-        });
     }
 }

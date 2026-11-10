@@ -13,6 +13,7 @@ import javax.swing.JTable;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
 import servicio.ServicioFlota;
+import servicio.ServicioOperario;
 
 public class PanelFlota extends JPanel {
 
@@ -20,6 +21,7 @@ public class PanelFlota extends JPanel {
 
     private final Frame padre;
     private final ServicioFlota servicio;
+    private final ServicioOperario servicioOperario;
     private final ModeloTablaFlota modelo;
     private final JComboBox<String> comboTipo =
             new JComboBox<>(new String[] {TODOS, "Auto", "Moto", "Camioneta"});
@@ -30,22 +32,23 @@ public class PanelFlota extends JPanel {
     private String patenteElegida;
     private boolean refrescando;
 
-    public PanelFlota(Frame padre, ServicioFlota servicio) {
+    public PanelFlota(Frame padre, ServicioFlota servicio, ServicioOperario servicioOperario) {
         super(new BorderLayout());
         this.padre = padre;
         this.servicio = servicio;
+        this.servicioOperario = servicioOperario;
         this.modelo = new ModeloTablaFlota(servicio);
         tablaFlota = new JTable(modelo);
 
         JButton agregarAuto = new JButton("Agregar auto");
         agregarAuto.addActionListener(e ->
-                new FormularioAuto(padre, servicio, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioAuto(padre, servicioOperario, this::refrescar).setVisible(true));
         JButton agregarMoto = new JButton("Agregar moto");
         agregarMoto.addActionListener(e ->
-                new FormularioMoto(padre, servicio, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioMoto(padre, servicioOperario, this::refrescar).setVisible(true));
         JButton agregarCamioneta = new JButton("Agregar camioneta");
         agregarCamioneta.addActionListener(e ->
-                new FormularioCamioneta(padre, servicio, modelo::fireTableDataChanged).setVisible(true));
+                new FormularioCamioneta(padre, servicioOperario, this::refrescar).setVisible(true));
 
         Runnable aplicarFiltro = () -> modelo.setFiltro(
                 TODOS.equals(comboTipo.getSelectedItem()) ? null : (String) comboTipo.getSelectedItem(),
@@ -100,8 +103,8 @@ public class PanelFlota extends JPanel {
             return;
         }
         try {
-            servicio.eliminarVehiculo(elegido);
-            modelo.fireTableDataChanged();
+            servicioOperario.eliminarVehiculo(elegido.getPatente());
+            refrescar();
         } catch (AlquilerException ex) {
             JOptionPane.showMessageDialog(padre, ex.getMessage(),
                     "No se pudo dar de baja el vehículo", JOptionPane.ERROR_MESSAGE);

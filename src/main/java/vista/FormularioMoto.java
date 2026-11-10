@@ -10,18 +10,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import modelo.flota.Moto;
-import servicio.ServicioFlota;
+import servicio.ServicioOperario;
 
 public class FormularioMoto extends JDialog {
 
     private final PanelDatosVehiculo datos = new PanelDatosVehiculo();
-    private final ServicioFlota servicio;
+    private final ServicioOperario servicio;
     private final Runnable alRegistrar;
 
     private final JTextField cilindrada = new JTextField(15);
     private final JCheckBox incluyeCasco = new JCheckBox();
 
-    public FormularioMoto(Frame padre, ServicioFlota servicio, Runnable alRegistrar) {
+    public FormularioMoto(Frame padre, ServicioOperario servicio, Runnable alRegistrar) {
         super(padre, "Agregar moto", true);
         this.servicio = servicio;
         this.alRegistrar = alRegistrar;

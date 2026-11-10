@@ -14,21 +14,21 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import modelo.Formatos;
 import modelo.alquiler.Contrato;
-import servicio.ServicioAlquiler;
+import servicio.ServicioOperario;
 
 public class FormularioDevolucion extends JDialog {
 
-    private final ServicioAlquiler servicioAlquiler;
+    private final ServicioOperario servicioOperario;
     private final Contrato contrato;
     private final Runnable alRegistrar;
 
     private final JTextField campoFechaDevolucion = new JTextField(15);
     private final JTextField campoKmFinal = new JTextField(15);
 
-    public FormularioDevolucion(Frame padre, ServicioAlquiler servicioAlquiler, Contrato contrato,
+    public FormularioDevolucion(Frame padre, ServicioOperario servicioOperario, Contrato contrato,
                                 Runnable alRegistrar) {
         super(padre, "Registrar devolución", true);
-        this.servicioAlquiler = servicioAlquiler;
+        this.servicioOperario = servicioOperario;
         this.contrato = contrato;
         this.alRegistrar = alRegistrar;
         campoFechaDevolucion.setText(
@@ -60,12 +60,12 @@ public class FormularioDevolucion extends JDialog {
         try {
             LocalDate fecha = FormularioCliente.fecha("de devolución", campoFechaDevolucion);
             int kmFinal = PanelDatosVehiculo.entero("Km final", campoKmFinal);
-            servicioAlquiler.registrarDevolucion(contrato, fecha, kmFinal);
+            Contrato devuelto = servicioOperario.registrarDevolucion(contrato.getNumero(), fecha, kmFinal);
             alRegistrar.run();
             JOptionPane.showMessageDialog(this,
-                    "Días cobrados: " + contrato.getDias()
-                            + "\nKm recorridos: " + contrato.getKmRecorridos()
-                            + "\nTotal a cobrar: " + String.format("%.2f", contrato.calcularTotal()),
+                    "Días cobrados: " + devuelto.getDias()
+                            + "\nKm recorridos: " + devuelto.getKmRecorridos()
+                            + "\nTotal a cobrar: " + String.format("%.2f", devuelto.calcularTotal()),
                     "Devolución registrada", JOptionPane.INFORMATION_MESSAGE);
             dispose();
         } catch (AlquilerException ex) {

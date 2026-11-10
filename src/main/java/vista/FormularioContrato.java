@@ -16,16 +16,17 @@ import javax.swing.border.EmptyBorder;
 import modelo.clientes.Cliente;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
-import modelo.tarifas.TarifaDiaria;
 import servicio.ServicioAlquiler;
 import servicio.ServicioClientes;
 import servicio.ServicioFlota;
+import servicio.ServicioOperario;
 
 public class FormularioContrato extends JDialog {
 
     private static final String SIN_TOTAL = "-";
 
     private final ServicioAlquiler servicioAlquiler;
+    private final ServicioOperario servicioOperario;
     private final Runnable alCrear;
 
     private final JComboBox<Cliente> comboCliente = new JComboBox<>();
@@ -35,9 +36,10 @@ public class FormularioContrato extends JDialog {
 
     public FormularioContrato(Frame padre, ServicioAlquiler servicioAlquiler,
                               ServicioClientes servicioClientes, ServicioFlota servicioFlota,
-                              Runnable alCrear) {
+                              ServicioOperario servicioOperario, Runnable alCrear) {
         super(padre, "Nuevo contrato", true);
         this.servicioAlquiler = servicioAlquiler;
+        this.servicioOperario = servicioOperario;
         this.alCrear = alCrear;
 
         for (Cliente cliente : servicioClientes.listarClientes()) {
@@ -88,7 +90,7 @@ public class FormularioContrato extends JDialog {
                 throw new AlquilerException("Hay que elegir un vehículo disponible");
             }
             LocalDate fin = FormularioCliente.fecha("de fin prevista", campoFechaFin);
-            servicioAlquiler.crearContrato(cliente, vehiculo, new TarifaDiaria(), fin);
+            servicioOperario.crearContrato(cliente.getDni(), vehiculo.getPatente(), fin);
             alCrear.run();
             dispose();
         } catch (AlquilerException ex) {

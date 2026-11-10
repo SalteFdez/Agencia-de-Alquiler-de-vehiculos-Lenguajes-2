@@ -10,18 +10,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import modelo.flota.Camioneta;
-import servicio.ServicioFlota;
+import servicio.ServicioOperario;
 
 public class FormularioCamioneta extends JDialog {
 
     private final PanelDatosVehiculo datos = new PanelDatosVehiculo();
-    private final ServicioFlota servicio;
+    private final ServicioOperario servicio;
     private final Runnable alRegistrar;
 
     private final JTextField capacidadCargaKg = new JTextField(15);
     private final JCheckBox traccion4x4 = new JCheckBox();
 
-    public FormularioCamioneta(Frame padre, ServicioFlota servicio, Runnable alRegistrar) {
+    public FormularioCamioneta(Frame padre, ServicioOperario servicio, Runnable alRegistrar) {
         super(padre, "Agregar camioneta", true);
         this.servicio = servicio;
         this.alRegistrar = alRegistrar;
