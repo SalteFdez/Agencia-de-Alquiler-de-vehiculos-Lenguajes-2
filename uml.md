@@ -263,6 +263,23 @@ classDiagram
             +ServicioKiosco(gestor: GestorPersistencia)
             +alquilar(dni: String, patente: String, fin: LocalDate) Contrato
         }
+        class ServicioOperario {
+            -gestor: GestorPersistencia
+            -agencia: Agencia
+            +ServicioOperario(gestor: GestorPersistencia, agencia: Agencia)
+            +recargar() void
+            +registrarVehiculo(v: Vehiculo) void
+            +eliminarVehiculo(patente: String) void
+            +registrarCliente(c: Cliente) void
+            +eliminarCliente(dni: String) void
+            +crearContrato(dni: String, patente: String, fin: LocalDate) Contrato
+            +registrarDevolucion(numero: int, fecha: LocalDate, kmFinal: int) Contrato
+            -aplicar(cambio: Cambio~T~) T
+        }
+        class Cambio~T~ {
+            <<interface>>
+            +aplicarSobre(fresca: Agencia) T
+        }
     }
 
     namespace persistencia {
@@ -469,6 +486,9 @@ classDiagram
     ServicioClientes --> "1" Agencia
     ServicioAlquiler --> "1" Agencia
     ServicioKiosco --> GestorPersistencia
+    ServicioOperario --> GestorPersistencia
+    ServicioOperario --> "1" Agencia
+    ServicioOperario ..> Cambio
     GestorPersistencia ..> Agencia : serializa
 
     Exception <|-- AlquilerException
