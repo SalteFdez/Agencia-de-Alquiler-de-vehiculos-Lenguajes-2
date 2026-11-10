@@ -1,5 +1,6 @@
 package persistencia;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -261,5 +262,42 @@ class GestorPersistenciaTest {
 
         assertInstanceOf(IOException.class, alCargar.getCause());
         assertInstanceOf(IOException.class, alGuardar.getCause());
+    }
+
+    @Test
+    void despuesDeGuardarEnLaCarpetaSoloQuedaElArchivoDeDatos() throws Exception {
+        GestorPersistencia gestor = new GestorPersistencia(new File(carpeta.toFile(), "agencia.dat"));
+
+        gestor.guardar(new Agencia());
+        gestor.guardar(new Agencia());
+
+        try (java.util.stream.Stream<Path> archivos = Files.list(carpeta)) {
+            assertEquals(java.util.List.of("agencia.dat"), archivos
+                    .map(p -> p.getFileName().toString()).collect(java.util.stream.Collectors.toList()));
+        }
+    }
+
+    @Test
+    void siElGuardadoFallaAMitadElArchivoAnteriorQuedaIntactoYNoQuedaTemporal() throws Exception {
+        File archivo = new File(carpeta.toFile(), "agencia.dat");
+        GestorPersistencia gestor = new GestorPersistencia(archivo);
+        Agencia buena = new Agencia();
+        buena.getVehiculos().add(new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL));
+        gestor.guardar(buena);
+        byte[] antes = Files.readAllBytes(archivo.toPath());
+        Agencia imposible = new Agencia();
+        imposible.getVehiculos().add(new Auto("ZZ999ZZ", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL) {
+            private final Object noSerializable = new Object();
+        });
+
+        AlquilerException e = assertThrows(AlquilerException.class, () -> gestor.guardar(imposible));
+
+        assertEquals("No se pudieron guardar los datos", e.getMessage());
+        assertArrayEquals(antes, Files.readAllBytes(archivo.toPath()));
+        try (java.util.stream.Stream<Path> archivos = Files.list(carpeta)) {
+            assertEquals(1, archivos.count());
+        }
     }
 }

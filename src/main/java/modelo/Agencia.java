@@ -36,4 +36,15 @@ public class Agencia implements Serializable {
     public int siguienteNroContrato() {
         return ++ultimoNroContrato;
     }
+
+    public void reemplazarCon(Agencia otra) {
+        vehiculos.clear();
+        vehiculos.addAll(otra.vehiculos);
+        clientes.clear();
+        clientes.addAll(otra.clientes);
+        contratos.clear();
+        contratos.addAll(otra.contratos);
+        ultimoIdCliente = otra.ultimoIdCliente;
+        ultimoNroContrato = otra.ultimoNroContrato;
+    }
 }

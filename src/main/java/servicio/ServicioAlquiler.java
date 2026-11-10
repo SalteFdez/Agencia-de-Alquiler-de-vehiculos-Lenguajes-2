@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import modelo.Agencia;
 import modelo.Formatos;
 import modelo.alquiler.Contrato;
@@ -91,5 +92,14 @@ public class ServicioAlquiler {
             }
         }
         return encontrados;
+    }
+
+    public Optional<Contrato> buscarPorNumero(int numero) {
+        for (Contrato c : agencia.getContratos()) {
+            if (c.getNumero() == numero) {
+                return Optional.of(c);
+            }
+        }
+        return Optional.empty();
     }
 }

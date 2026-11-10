@@ -410,4 +410,24 @@ class ServicioAlquilerTest {
 
         assertEquals("La fecha de fin prevista debe ser posterior a hoy", e.getMessage());
     }
+
+    @Test
+    void buscarPorNumeroDevuelveElContratoConEseNumero() throws AlquilerException {
+        ServicioAlquiler servicio = new ServicioAlquiler(new Agencia());
+        servicio.crearContrato(cliente(), auto("AB123CD"), new TarifaDiaria(),
+                LocalDate.now().plusDays(2));
+        Contrato segundo = servicio.crearContrato(cliente(), auto("XY987ZW"), new TarifaDiaria(),
+                LocalDate.now().plusDays(3));
+
+        assertSame(segundo, servicio.buscarPorNumero(2).get());
+    }
+
+    @Test
+    void buscarPorNumeroDevuelveVacioSiNoExisteEseNumero() throws AlquilerException {
+        ServicioAlquiler servicio = new ServicioAlquiler(new Agencia());
+        servicio.crearContrato(cliente(), auto("AB123CD"), new TarifaDiaria(),
+                LocalDate.now().plusDays(2));
+
+        assertTrue(servicio.buscarPorNumero(7).isEmpty());
+    }
 }

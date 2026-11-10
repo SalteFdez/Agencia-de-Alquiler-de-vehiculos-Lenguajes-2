@@ -256,6 +256,7 @@ classDiagram
             -exigirFinPosteriorAHoy(fin: LocalDate) void
             -motivoDeRechazo(c: Cliente, v: Vehiculo, fin: LocalDate) String
             +listarContratos(estado: EstadoContrato) List~Contrato~
+            +buscarPorNumero(numero: int) Optional~Contrato~
         }
         class ServicioKiosco {
             -gestor: GestorPersistencia
@@ -291,6 +292,7 @@ classDiagram
             +getContratos() List~Contrato~
             +siguienteIdCliente() int
             +siguienteNroContrato() int
+            +reemplazarCon(otra: Agencia) void
         }
     }
 
