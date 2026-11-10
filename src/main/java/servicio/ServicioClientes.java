@@ -3,6 +3,7 @@ package servicio;
 import excepciones.AlquilerException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import modelo.Agencia;
 import modelo.alquiler.Contrato;
 import modelo.alquiler.EstadoContrato;
@@ -65,6 +66,15 @@ public class ServicioClientes {
             }
         }
         return encontrados;
+    }
+
+    public Optional<Cliente> buscarPorDni(String dni) {
+        for (Cliente c : agencia.getClientes()) {
+            if (c.getDni().trim().equals(dni.trim())) {
+                return Optional.of(c);
+            }
+        }
+        return Optional.empty();
     }
 
     public List<Cliente> listarClientes() {

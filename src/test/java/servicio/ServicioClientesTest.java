@@ -1,6 +1,7 @@
 package servicio;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -303,5 +304,26 @@ class ServicioClientesTest {
         servicio.eliminarCliente(luis);
 
         assertEquals(List.of(ana), servicio.listarClientes());
+    }
+
+    @Test
+    void buscarPorDniDevuelveElClienteConEseDniExacto() throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        Cliente ana = cliente("Ana", "Gomez", "30123456");
+        Cliente luis = cliente("Luis", "Perez", "28999111");
+        servicio.registrarCliente(ana);
+        servicio.registrarCliente(luis);
+
+        assertSame(luis, servicio.buscarPorDni("28999111").get());
+    }
+
+    @Test
+    void buscarPorDniDevuelveVacioSiNoHayNingunoYUnDniParcialNoEncuentraNada()
+            throws AlquilerException {
+        ServicioClientes servicio = new ServicioClientes(new Agencia());
+        servicio.registrarCliente(cliente("Ana", "Gomez", "30123456"));
+
+        assertTrue(servicio.buscarPorDni("99999999").isEmpty());
+        assertTrue(servicio.buscarPorDni("3012").isEmpty());
     }
 }

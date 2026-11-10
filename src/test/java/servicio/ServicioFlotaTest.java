@@ -1,6 +1,7 @@
 package servicio;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -386,5 +387,26 @@ class ServicioFlotaTest {
 
         assertEquals("No se puede dar de baja un vehículo alquilado", e.getMessage());
         assertEquals(List.of(auto), servicio.listarVehiculos());
+    }
+
+    @Test
+    void buscarPorPatenteDevuelveElVehiculoConEsaPatente() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        Auto cronos = new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL);
+        Moto honda = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000, 8000.0, 125, true);
+        servicio.registrarVehiculo(cronos);
+        servicio.registrarVehiculo(honda);
+
+        assertSame(honda, servicio.buscarPorPatente("A123BCD").get());
+    }
+
+    @Test
+    void buscarPorPatenteDevuelveVacioSiLaPatenteNoExiste() throws AlquilerException {
+        ServicioFlota servicio = new ServicioFlota(new Agencia());
+        servicio.registrarVehiculo(new Auto("AB123CD", "Fiat", "Cronos", "Blanco", 2022, 15000,
+                10000.0, 4, 5, TipoCaja.MANUAL));
+
+        assertTrue(servicio.buscarPorPatente("ZZ999ZZ").isEmpty());
     }
 }

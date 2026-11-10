@@ -389,4 +389,25 @@ class ServicioAlquilerTest {
         assertEquals("La fecha de devolución no puede ser anterior al inicio del contrato",
                 fechaAnteriorYKmMalo.getMessage());
     }
+
+    @Test
+    void elTotalEstimadoEsElPrecioDiarioPorLosDiasHastaLaFechaDeFin() throws AlquilerException {
+        ServicioAlquiler servicio = new ServicioAlquiler(new Agencia());
+        Moto moto = new Moto("A123BCD", "Honda", "CB125", "Rojo", 2023, 5000, 8000.0, 125, true);
+        LocalDate fin = LocalDate.now().plusDays(3);
+
+        assertEquals(30000.0, servicio.calcularTotalEstimado(auto("AB123CD"), fin), 0.001);
+        assertEquals(14400.0, servicio.calcularTotalEstimado(moto, fin), 0.001);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void elTotalEstimadoConUnaFechaQueNoEsPosteriorAHoyLanzaExcepcion(int dias) {
+        ServicioAlquiler servicio = new ServicioAlquiler(new Agencia());
+
+        AlquilerException e = assertThrows(AlquilerException.class,
+                () -> servicio.calcularTotalEstimado(auto("AB123CD"), LocalDate.now().plusDays(dias)));
+
+        assertEquals("La fecha de fin prevista debe ser posterior a hoy", e.getMessage());
+    }
 }

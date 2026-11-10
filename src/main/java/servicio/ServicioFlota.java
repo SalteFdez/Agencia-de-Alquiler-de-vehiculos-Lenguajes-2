@@ -3,6 +3,7 @@ package servicio;
 import excepciones.AlquilerException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import modelo.Agencia;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
@@ -43,6 +44,15 @@ public class ServicioFlota {
             throw new AlquilerException("No se puede dar de baja un vehículo alquilado");
         }
         agencia.getVehiculos().remove(v);
+    }
+
+    public Optional<Vehiculo> buscarPorPatente(String patente) {
+        for (Vehiculo v : agencia.getVehiculos()) {
+            if (v.getPatente().equalsIgnoreCase(patente.trim())) {
+                return Optional.of(v);
+            }
+        }
+        return Optional.empty();
     }
 
     public List<Vehiculo> filtrar(String tipo, EstadoVehiculo estado) {

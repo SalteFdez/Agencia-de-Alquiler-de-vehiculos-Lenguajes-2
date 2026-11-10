@@ -212,6 +212,7 @@ classDiagram
             +listarVehiculos() List~Vehiculo~
             +eliminarVehiculo(v: Vehiculo) void
             +filtrar(tipo: String, estado: EstadoVehiculo) List~Vehiculo~
+            +buscarPorPatente(patente: String) Optional~Vehiculo~
         }
         class ServicioClientes {
             -agencia: Agencia
@@ -219,13 +220,16 @@ classDiagram
             -exigir(valor: String, campo: String) void
             +eliminarCliente(c: Cliente) void
             +buscarPorTexto(texto: String) List~Cliente~
+            +buscarPorDni(dni: String) Optional~Cliente~
             +listarClientes() List~Cliente~
         }
         class ServicioAlquiler {
             -agencia: Agencia
             +ServicioAlquiler(agencia: Agencia)
             +crearContrato(c: Cliente, v: Vehiculo, t: Tarifa, fin: LocalDate) Contrato
+            +calcularTotalEstimado(v: Vehiculo, fin: LocalDate) double
             +registrarDevolucion(c: Contrato, fecha: LocalDate, kmFinal: int) void
+            -exigirFinPosteriorAHoy(fin: LocalDate) void
             -motivoDeRechazo(c: Cliente, v: Vehiculo, fin: LocalDate) String
             +listarContratos(estado: EstadoContrato) List~Contrato~
         }

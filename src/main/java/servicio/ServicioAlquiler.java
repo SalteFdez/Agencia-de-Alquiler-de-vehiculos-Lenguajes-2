@@ -4,6 +4,7 @@ import excepciones.AlquilerException;
 import excepciones.ConductorNoHabilitadoException;
 import excepciones.VehiculoNoDisponibleException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Agencia;
@@ -14,6 +15,7 @@ import modelo.clientes.Cliente;
 import modelo.flota.EstadoVehiculo;
 import modelo.flota.Vehiculo;
 import modelo.tarifas.Tarifa;
+import modelo.tarifas.TarifaDiaria;
 
 public class ServicioAlquiler {
 
@@ -25,9 +27,7 @@ public class ServicioAlquiler {
 
     public Contrato crearContrato(Cliente c, Vehiculo v, Tarifa t, LocalDate fin)
             throws AlquilerException {
-        if (!fin.isAfter(LocalDate.now())) {
-            throw new AlquilerException("La fecha de fin prevista debe ser posterior a hoy");
-        }
+        exigirFinPosteriorAHoy(fin);
         if (!v.estaDisponible()) {
             throw new VehiculoNoDisponibleException(v.getPatente());
         }
@@ -39,6 +39,17 @@ public class ServicioAlquiler {
         v.cambiarEstado(EstadoVehiculo.ALQUILADO);
         agencia.getContratos().add(contrato);
         return contrato;
+    }
+
+    public double calcularTotalEstimado(Vehiculo v, LocalDate fin) throws AlquilerException {
+        exigirFinPosteriorAHoy(fin);
+        return new TarifaDiaria().calcular(v, ChronoUnit.DAYS.between(LocalDate.now(), fin), 0);
+    }
+
+    private void exigirFinPosteriorAHoy(LocalDate fin) throws AlquilerException {
+        if (!fin.isAfter(LocalDate.now())) {
+            throw new AlquilerException("La fecha de fin prevista debe ser posterior a hoy");
+        }
     }
 
     private String motivoDeRechazo(Cliente c, Vehiculo v, LocalDate fin) {
